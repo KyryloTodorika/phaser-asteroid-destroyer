@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     private speed: number = 300
+    private health: number = 100
 
     private cursors: {
         up: Phaser.Input.Keyboard.Key
@@ -56,5 +57,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             direction.x * this.speed,
             direction.y * this.speed
         )
+    }
+
+    takeDamage(amount: number) {
+        this.health -= amount
+
+        console.log(`Player Health: ${this.health}`)
+
+        if (this.health <= 0) {
+            this.health = 0
+            this.destroy()
+        }
     }
 }

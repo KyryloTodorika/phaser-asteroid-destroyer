@@ -9,6 +9,10 @@ export class BootScene extends Phaser.Scene {
     preload() {
         this.load.image('background', IMAGE_ASSETS.background)
         this.load.image('player', IMAGE_ASSETS.player)
+
+        IMAGE_ASSETS.asteroids.forEach((path, index) => {
+            this.load.image(`asteroid_${index + 1}`, path)
+        })
     }
 
     create() {
