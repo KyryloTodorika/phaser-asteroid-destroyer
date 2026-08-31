@@ -22,6 +22,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this)
 
         this.setDisplaySize(96, 96)
+        this.body?.setSize(48, 108)
         this.setCollideWorldBounds(true)
 
         this.cursors = scene.input.keyboard!.addKeys({
@@ -68,5 +69,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.health = 0
             this.destroy()
         }
+    }
+
+    getHealth(): number {
+        return this.health
     }
 }

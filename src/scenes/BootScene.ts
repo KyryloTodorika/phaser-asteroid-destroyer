@@ -10,12 +10,14 @@ export class BootScene extends Phaser.Scene {
         this.load.image('background', IMAGE_ASSETS.background)
         this.load.image('player', IMAGE_ASSETS.player)
 
+        this.load.image('alien_standard', IMAGE_ASSETS.enemies.standard)
+
         IMAGE_ASSETS.asteroids.forEach((path, index) => {
             this.load.image(`asteroid_${index + 1}`, path)
         })
     }
 
     create() {
-        this.scene.start('GameScene')
+        this.scene.start('MenuScene')
     }
 }
