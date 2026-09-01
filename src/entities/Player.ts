@@ -27,7 +27,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         down: Phaser.Input.Keyboard.Key
         left: Phaser.Input.Keyboard.Key
         right: Phaser.Input.Keyboard.Key
-        shootKey: Phaser.Input.Keyboard.Key
     }
 
     constructor(
@@ -45,21 +44,47 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.setDisplaySize(96, 96)
 
-        // ORIGINAL PLAYER HITBOX
+        // Player hitbox
         this.body?.setSize(48, 108)
 
         this.setCollideWorldBounds(true)
 
-        this.setDrag(this.drag, this.drag)
-        this.setMaxVelocity(this.maxSpeed)
+        this.setDrag(
+            this.drag,
+            this.drag
+        )
 
-        this.cursors = scene.input.keyboard!.addKeys({
-            up: Phaser.Input.Keyboard.KeyCodes.W,
-            down: Phaser.Input.Keyboard.KeyCodes.S,
-            left: Phaser.Input.Keyboard.KeyCodes.A,
-            right: Phaser.Input.Keyboard.KeyCodes.D,
-            shootKey: Phaser.Input.Keyboard.KeyCodes.SPACE
-        }) as typeof this.cursors
+        this.setMaxVelocity(
+            this.maxSpeed
+        )
+
+        // Movement keys
+        this.cursors =
+            scene.input.keyboard!.addKeys({
+                up: Phaser.Input.Keyboard.KeyCodes.W,
+                down: Phaser.Input.Keyboard.KeyCodes.S,
+                left: Phaser.Input.Keyboard.KeyCodes.A,
+                right: Phaser.Input.Keyboard.KeyCodes.D
+            }) as typeof this.cursors
+
+        // =========================================
+        // MOUSE SHOOTING
+        // =========================================
+
+        scene.input.on(
+            'pointerdown',
+            (pointer: Phaser.Input.Pointer) => {
+                if (
+                    pointer.leftButtonDown() &&
+                    this.active
+                ) {
+                    this.shoot(
+                        pointer.worldX,
+                        pointer.worldY
+                    )
+                }
+            }
+        )
     }
 
     update() {
@@ -67,7 +92,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             return
         }
 
-        const direction = new Phaser.Math.Vector2(0, 0)
+        // =========================================
+        // MOVEMENT
+        // =========================================
+
+        const direction =
+            new Phaser.Math.Vector2(0, 0)
 
         if (this.cursors.left.isDown) {
             direction.x = -1
@@ -96,10 +126,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.setAcceleration(0, 0)
         }
 
-        // Rotate towards actual movement direction
+        // =========================================
+        // ROTATION
+        // =========================================
+
         const velocity = this.body?.velocity
 
-        if (velocity && velocity.length() > 5) {
+        if (
+            velocity &&
+            velocity.length() > 5
+        ) {
             const targetRotation =
                 Phaser.Math.Angle.Between(
                     0,
@@ -108,49 +144,96 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     velocity.y
                 ) + Math.PI / 2
 
-            this.rotation = Phaser.Math.Angle.RotateTo(
-                this.rotation,
-                targetRotation,
-                this.rotationSpeed
-            )
-        }
-
-        // Shoot
-        if (Phaser.Input.Keyboard.JustDown(this.cursors.shootKey)) {
-            this.shoot()
+            this.rotation =
+                Phaser.Math.Angle.RotateTo(
+                    this.rotation,
+                    targetRotation,
+                    this.rotationSpeed
+                )
         }
     }
 
-    private shoot() {
-        if (!this.canShoot || !this.active) {
+    // =====================================================
+    // SHOOT
+    // =====================================================
+
+    private shoot(
+        targetX: number,
+        targetY: number
+    ) {
+        if (
+            !this.canShoot ||
+            !this.active
+        ) {
             return
         }
 
-        const direction = new Phaser.Math.Vector2(
-            Math.sin(this.rotation),
-            -Math.cos(this.rotation)
-        )
+        // =========================================
+        // DIRECTION TO MOUSE
+        // =========================================
 
-        const offset = 55
+        const direction =
+            new Phaser.Math.Vector2(
+                targetX - this.x,
+                targetY - this.y
+            )
 
-        const laserX = this.x + direction.x * offset
-        const laserY = this.y + direction.y * offset
+        if (direction.length() === 0) {
+            return
+        }
+
+        direction.normalize()
+
+        // =========================================
+        // LASER START POSITION
+        // =========================================
+
+        const offset = 10
+
+        const laserX =
+            this.x + direction.x * offset
+
+        const laserY =
+            this.y + direction.y * offset
+
+        // =========================================
+        // LASER ROTATION
+        // =========================================
+
+        const laserRotation =
+            Phaser.Math.Angle.Between(
+                0,
+                0,
+                direction.x,
+                direction.y
+            ) + Math.PI / 2
+
+        // =========================================
+        // CREATE LASER
+        // =========================================
 
         const laser = new PlayerLaser(
             this.scene,
             laserX,
             laserY,
-            this.rotation
+            laserRotation
         )
 
         // Add to physics group
         this.laserGroup.add(laser)
 
-        // Set velocity AFTER adding to group
+        // =========================================
+        // LASER VELOCITY
+        // =========================================
+
         laser.setVelocity(
             direction.x * 600,
             direction.y * 600
         )
+
+        // =========================================
+        // SHOOT COOLDOWN
+        // =========================================
 
         this.canShoot = false
 
@@ -162,14 +245,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         )
     }
 
+    // =====================================================
+    // DAMAGE
+    // =====================================================
+
     takeDamage(amount: number) {
-        if (!this.active || !this.canTakeDamage) {
+        if (
+            !this.active ||
+            !this.canTakeDamage
+        ) {
             return
         }
 
         this.health -= amount
 
-        console.log(`Player Health: ${this.health}`)
+        console.log(
+            `Player Health: ${this.health}`
+        )
 
         this.canTakeDamage = false
 
