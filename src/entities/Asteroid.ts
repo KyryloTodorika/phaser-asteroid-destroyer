@@ -12,19 +12,75 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     ) {
         super(scene, x, y, texture)
 
-        scene.add.existing(this)
-        scene.physics.add.existing(this)
-
         this.speed = speed
 
-        this.setVelocity(
-            Phaser.Math.Between(-1, 1) * this.speed,
-            Phaser.Math.Between(-1, 1) * this.speed
+        // Add display object only
+        scene.add.existing(this)
+
+        // IMPORTANT:
+        // Physics body is added by asteroidGroup.add()
+        // in GameScene.
+    }
+
+    startMovement() {
+        const body =
+            this.body as Phaser.Physics.Arcade.Body
+
+        if (!body) {
+            console.error(
+                'Asteroid has no physics body!'
+            )
+            return
+        }
+
+        // =========================================
+        // HITBOX
+        // =========================================
+
+        body.setCircle(
+            this.width * 0.4
         )
 
-        this.setBounce(1, 1)
-        this.setCollideWorldBounds(true)
+        // =========================================
+        // RANDOM DIRECTION
+        // =========================================
 
-        this.setCircle(this.width * 0.4)
+        const angle =
+            Phaser.Math.FloatBetween(
+                0,
+                Math.PI * 2
+            )
+
+        body.setVelocity(
+            Math.cos(angle) * this.speed,
+            Math.sin(angle) * this.speed
+        )
+
+        // =========================================
+        // BOUNCE
+        // =========================================
+
+        body.setBounce(
+            1,
+            1
+        )
+
+        body.setCollideWorldBounds(
+            true
+        )
+
+        console.log(
+            'ASTEROID VELOCITY:',
+            body.velocity.x,
+            body.velocity.y
+        )
+    }
+
+    takeDamage(amount: number) {
+        if (!this.active) {
+            return
+        }
+
+        // Add your health system here
     }
 }

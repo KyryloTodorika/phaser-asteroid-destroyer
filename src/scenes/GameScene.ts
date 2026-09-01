@@ -280,39 +280,30 @@ export class GameScene extends Phaser.Scene {
             'asteroid_4'
         ]
 
-        // Random texture
         const texture =
             Phaser.Utils.Array.GetRandom(
                 asteroidTypes
             )
 
-        // Random size
         const size =
             Phaser.Math.Between(
                 80,
                 140
             )
 
-        // =========================================
-        // RANDOM SPAWN
-        // =========================================
-
         let x: number
         let y: number
 
         do {
+            x = Phaser.Math.Between(
+                100,
+                1180
+            )
 
-            x =
-                Phaser.Math.Between(
-                    100,
-                    1180
-                )
-
-            y =
-                Phaser.Math.Between(
-                    100,
-                    620
-                )
+            y = Phaser.Math.Between(
+                100,
+                620
+            )
 
         } while (
             Phaser.Math.Distance.Between(
@@ -333,8 +324,13 @@ export class GameScene extends Phaser.Scene {
                 x,
                 y,
                 texture,
-                size
+                150
             )
+
+        asteroid.setDisplaySize(
+            size,
+            size
+        )
 
         // =========================================
         // ADD TO PHYSICS GROUP
@@ -343,6 +339,12 @@ export class GameScene extends Phaser.Scene {
         this.asteroidGroup.add(
             asteroid
         )
+
+        // =========================================
+        // NOW START PHYSICS
+        // =========================================
+
+        asteroid.startMovement()
 
         return asteroid
     }
@@ -467,26 +469,19 @@ export class GameScene extends Phaser.Scene {
             this.asteroidGroup,
             this.alienGroup,
             (
-                asteroidObject,
+                _asteroidObject,
                 alienObject
             ) => {
 
-                if (
-                    this.waveComplete
-                ) {
+                if (this.waveComplete) {
                     return
                 }
 
                 const alien =
                     alienObject as Alien
 
-                if (
-                    alien.active
-                ) {
-
-                    alien.takeDamage(
-                        10
-                    )
+                if (alien.active) {
+                    alien.takeDamage(10)
                 }
             }
         )
