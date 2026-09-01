@@ -9,6 +9,7 @@ export class GameScene extends Phaser.Scene {
     private player!: Player
 
     private aliens: Alien[] = []
+    private alienGroup!: Phaser.Physics.Arcade.Group
 
     private playerLasers!: Phaser.Physics.Arcade.Group
 
@@ -31,10 +32,11 @@ export class GameScene extends Phaser.Scene {
             .setDisplaySize(1280, 720)
 
         // =========================================
-        // PLAYER LASERS
+        // PHYSICS GROUPS
         // =========================================
 
         this.playerLasers = this.physics.add.group()
+        this.alienGroup = this.physics.add.group()
 
         // =========================================
         // UI
@@ -112,7 +114,7 @@ export class GameScene extends Phaser.Scene {
 
     private createWave1() {
         // =========================================
-        // ONE ASTEROID
+        // ASTEROID
         // =========================================
 
         const asteroid = new Asteroid(
@@ -127,68 +129,52 @@ export class GameScene extends Phaser.Scene {
             this.player,
             asteroid,
             () => {
-                this.player.takeDamage(10)
+                if (this.player.active) {
+                    this.player.takeDamage(10)
+                }
             }
         )
 
         // =========================================
-        // THREE ALIENS
+        // ALIENS
         // =========================================
 
-        const alien1 = new Alien(
-            this,
-            150,
-            150,
-            'alien_standard',
-            70
-        )
-
-        const alien2 = new Alien(
-            this,
-            1100,
-            150,
-            'alien_standard',
-            70
-        )
-
-        const alien3 = new Alien(
-            this,
-            1100,
-            550,
-            'alien_standard',
-            70
-        )
-
-        this.aliens.push(
-            alien1,
-            alien2,
-            alien3
-        )
+        this.createAlien(150, 150)
+        this.createAlien(1100, 150)
+        this.createAlien(1100, 550)
 
         // =========================================
-        // COLLISIONS
+        // PLAYER -> ALIENS
         // =========================================
 
-        this.aliens.forEach((alien) => {
-
-            // Alien -> Player
-            this.physics.add.collider(
-                this.player,
-                alien,
-                () => {
+        this.physics.add.collider(
+            this.player,
+            this.alienGroup,
+            () => {
+                if (this.player.active) {
                     this.player.takeDamage(20)
                 }
-            )
+            }
+        )
 
-            // Asteroid -> Alien
-            this.physics.add.collider(
-                asteroid,
-                alien,
-                () => {
+        // =========================================
+        // ASTEROID -> ALIENS
+        // =========================================
+
+        this.physics.add.collider(
+            asteroid,
+            this.alienGroup,
+            (
+                asteroidObject,
+                alienObject
+            ) => {
+                const alien = alienObject as Alien
+
+                if (alien.active) {
                     alien.takeDamage(10)
                 }
-            )
-        })
+            }
+        )
 
         // =========================================
         // PLAYER LASER -> ALIEN
@@ -196,7 +182,7 @@ export class GameScene extends Phaser.Scene {
 
         this.physics.add.overlap(
             this.playerLasers,
-            this.aliens,
+            this.alienGroup,
             (
                 laserObject,
                 alienObject
@@ -208,13 +194,38 @@ export class GameScene extends Phaser.Scene {
                     return
                 }
 
-                alien.takeDamage(
-                    laser.getDamage()
-                )
+                // Get damage before destroying anything
+                const damage = laser.getDamage()
 
+                // Destroy laser
                 laser.destroy()
+
+                // Damage alien
+                alien.takeDamage(damage)
             }
         )
+    }
+
+    // =====================================================
+    // CREATE ALIEN
+    // =====================================================
+
+    private createAlien(
+        x: number,
+        y: number
+    ) {
+        const alien = new Alien(
+            this,
+            x,
+            y,
+            'alien_standard',
+            70
+        )
+
+        this.aliens.push(alien)
+
+        // Add the actual Alien object to the physics group
+        this.alienGroup.add(alien)
     }
 
     // =====================================================
@@ -226,14 +237,22 @@ export class GameScene extends Phaser.Scene {
             return
         }
 
+        // Player
         this.player.update()
 
+        // Aliens
         this.aliens.forEach((alien) => {
             if (alien.active) {
                 alien.update(this.player)
             }
         })
 
+        // Remove destroyed aliens from array
+        this.aliens = this.aliens.filter(
+            (alien) => alien.active
+        )
+
+        // UI
         this.updateHealthUI()
     }
 }

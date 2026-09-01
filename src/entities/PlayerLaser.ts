@@ -19,9 +19,6 @@ export class PlayerLaser extends Phaser.Physics.Arcade.Sprite {
 
         const body = this.body as Phaser.Physics.Arcade.Body
 
-        // Centered hitbox
-        body.setSize(8, 20, true)
-
         body.enable = true
     }
 

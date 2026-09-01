@@ -4,9 +4,6 @@ export class Alien extends Phaser.Physics.Arcade.Sprite {
     private speed: number
     private health: number = 30
 
-    private canTakeDamage: boolean = true
-    private damageCooldown: number = 200
-
     constructor(
         scene: Phaser.Scene,
         x: number,
@@ -19,7 +16,6 @@ export class Alien extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        // Visual size
         this.setDisplaySize(80, 80)
 
         this.speed = speed
@@ -48,28 +44,18 @@ export class Alien extends Phaser.Physics.Arcade.Sprite {
     }
 
     takeDamage(amount: number) {
-        if (!this.active || !this.canTakeDamage) {
+        if (!this.active) {
             return
         }
 
         this.health -= amount
 
-        console.log(`Alien Health: ${this.health}`)
-
-        this.canTakeDamage = false
-
-        this.scene.time.delayedCall(
-            this.damageCooldown,
-            () => {
-                this.canTakeDamage = true
-            }
+        console.log(
+            `Alien hit! Health: ${this.health}`
         )
 
         if (this.health <= 0) {
             this.health = 0
-
-            console.log('Alien destroyed')
-
             this.destroy()
         }
     }
