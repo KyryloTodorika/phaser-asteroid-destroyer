@@ -487,6 +487,51 @@ export class GameScene extends Phaser.Scene {
         )
 
         // =========================================
+        // ASTEROID <-> ASTEROID
+        // =========================================
+
+        this.physics.add.collider(
+            this.asteroidGroup,
+            this.asteroidGroup
+        )
+
+        this.physics.add.overlap(
+            this.playerLasers,
+            this.asteroidGroup,
+            (
+                laserObject,
+                asteroidObject
+            ) => {
+
+                const laser =
+                    laserObject as PlayerLaser
+
+                const asteroid =
+                    asteroidObject as Asteroid
+
+                if (
+                    !laser.active ||
+                    !asteroid.active
+                ) {
+                    return
+                }
+
+                const damage =
+                    laser.getDamage()
+
+                // Destroy laser
+                laser.destroy()
+
+                // Damage asteroid
+                if (asteroid.active) {
+                    asteroid.takeDamage(
+                        damage
+                    )
+                }
+            }
+        )
+
+        // =========================================
         // PLAYER LASER -> ALIEN
         // =========================================
 

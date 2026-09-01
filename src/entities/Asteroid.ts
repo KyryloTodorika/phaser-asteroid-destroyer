@@ -2,27 +2,33 @@ import Phaser from 'phaser'
 
 export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     private speed: number
+    private health: number
 
     constructor(
         scene: Phaser.Scene,
         x: number,
         y: number,
         texture: string,
-        speed: number = 100
+        speed: number = 100,
+        health: number = 30
     ) {
         super(scene, x, y, texture)
 
         this.speed = speed
+        this.health = health
 
-        // Add display object only
+        // =========================================
+        // ADD TO SCENE
+        // =========================================
+
         scene.add.existing(this)
 
-        // IMPORTANT:
-        // Physics body is added by asteroidGroup.add()
-        // in GameScene.
+        // Physics body is created when added
+        // to asteroidGroup in GameScene.
     }
 
     startMovement() {
+
         const body =
             this.body as Phaser.Physics.Arcade.Body
 
@@ -30,11 +36,12 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
             console.error(
                 'Asteroid has no physics body!'
             )
+
             return
         }
 
         // =========================================
-        // HITBOX
+        // CIRCULAR HITBOX
         // =========================================
 
         body.setCircle(
@@ -57,7 +64,7 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
         )
 
         // =========================================
-        // BOUNCE
+        // BOUNCE FROM WORLD
         // =========================================
 
         body.setBounce(
@@ -69,18 +76,49 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
             true
         )
 
-        console.log(
-            'ASTEROID VELOCITY:',
-            body.velocity.x,
-            body.velocity.y
+        // =========================================
+        // ROTATION
+        // =========================================
+
+        body.setAngularVelocity(
+            Phaser.Math.Between(
+                -40,
+                40
+            )
         )
     }
 
-    takeDamage(amount: number) {
+    // =========================================
+    // DAMAGE
+    // =========================================
+
+    takeDamage(
+        amount: number
+    ) {
+
         if (!this.active) {
             return
         }
 
-        // Add your health system here
+        this.health -= amount
+
+        console.log(
+            `Asteroid Health: ${this.health}`
+        )
+
+        if (this.health <= 0) {
+
+            this.health = 0
+
+            this.destroy()
+        }
+    }
+
+    // =========================================
+    // HEALTH
+    // =========================================
+
+    getHealth(): number {
+        return this.health
     }
 }
