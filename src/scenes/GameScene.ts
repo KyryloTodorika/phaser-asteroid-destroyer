@@ -18,9 +18,6 @@ export class GameScene extends Phaser.Scene {
 
     private currentWave: number = 1
 
-    private gameOverContainer!: Phaser.GameObjects.Container
-    private gameOver: boolean = false
-
     constructor() {
         super('GameScene')
     }
@@ -30,8 +27,8 @@ export class GameScene extends Phaser.Scene {
         // RESET STATE
         // =========================================
 
-        this.gameOver = false
         this.aliens = []
+        this.currentWave = 1
 
         // =========================================
         // BACKGROUND
@@ -45,7 +42,10 @@ export class GameScene extends Phaser.Scene {
         // PHYSICS GROUPS
         // =========================================
 
-        this.playerLasers = this.physics.add.group()
+        this.playerLasers = this.physics.add.group({
+            runChildUpdate: true
+        })
+
         this.alienGroup = this.physics.add.group()
 
         // =========================================
@@ -72,7 +72,7 @@ export class GameScene extends Phaser.Scene {
         this.createWave()
 
         // =========================================
-        // INITIAL UI UPDATE
+        // INITIAL UI
         // =========================================
 
         this.updateHealthUI()
@@ -109,7 +109,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     private updateHealthUI() {
-        if (!this.player || !this.player.active) {
+        if (
+            !this.player ||
+            !this.player.active
+        ) {
             return
         }
 
@@ -123,8 +126,10 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     private createWave() {
-        if (this.currentWave === 1) {
-            this.createWave1()
+        switch (this.currentWave) {
+            case 1:
+                this.createWave1()
+                break
         }
     }
 
@@ -133,6 +138,7 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     private createWave1() {
+
         // =========================================
         // ASTEROID
         // =========================================
@@ -153,10 +159,7 @@ export class GameScene extends Phaser.Scene {
             this.player,
             asteroid,
             () => {
-                if (
-                    !this.gameOver &&
-                    this.player.active
-                ) {
+                if (this.player.active) {
                     this.player.takeDamage(10)
                 }
             }
@@ -166,29 +169,37 @@ export class GameScene extends Phaser.Scene {
         // ALIENS
         // =========================================
 
-        this.createAlien(150, 150)
-        this.createAlien(1100, 150)
-        this.createAlien(1100, 550)
+        this.createAlien(
+            150,
+            150
+        )
+
+        this.createAlien(
+            1100,
+            150
+        )
+
+        this.createAlien(
+            1100,
+            550
+        )
 
         // =========================================
-        // ALIEN -> PLAYER
+        // PLAYER -> ALIENS
         // =========================================
 
         this.physics.add.collider(
             this.player,
             this.alienGroup,
             () => {
-                if (
-                    !this.gameOver &&
-                    this.player.active
-                ) {
+                if (this.player.active) {
                     this.player.takeDamage(20)
                 }
             }
         )
 
         // =========================================
-        // ASTEROID -> ALIEN
+        // ASTEROID -> ALIENS
         // =========================================
 
         this.physics.add.collider(
@@ -198,9 +209,6 @@ export class GameScene extends Phaser.Scene {
                 asteroidObject,
                 alienObject
             ) => {
-                if (this.gameOver) {
-                    return
-                }
 
                 const alien =
                     alienObject as Alien
@@ -222,9 +230,6 @@ export class GameScene extends Phaser.Scene {
                 laserObject,
                 alienObject
             ) => {
-                if (this.gameOver) {
-                    return
-                }
 
                 const laser =
                     laserObject as PlayerLaser
@@ -232,6 +237,7 @@ export class GameScene extends Phaser.Scene {
                 const alien =
                     alienObject as Alien
 
+                // Make sure both still exist
                 if (
                     !laser.active ||
                     !alien.active
@@ -239,8 +245,9 @@ export class GameScene extends Phaser.Scene {
                     return
                 }
 
-                // Store damage before destroying laser
-                const damage = laser.getDamage()
+                // Get damage first
+                const damage =
+                    laser.getDamage()
 
                 // Destroy laser
                 laser.destroy()
@@ -261,6 +268,7 @@ export class GameScene extends Phaser.Scene {
         x: number,
         y: number
     ) {
+
         const alien = new Alien(
             this,
             x,
@@ -269,176 +277,11 @@ export class GameScene extends Phaser.Scene {
             70
         )
 
+        // Add to array
         this.aliens.push(alien)
 
+        // Add to physics group
         this.alienGroup.add(alien)
-    }
-
-    // =====================================================
-    // GAME OVER
-    // =====================================================
-
-    private showGameOver() {
-        if (this.gameOver) {
-            return
-        }
-
-        this.gameOver = true
-
-        // =========================================
-        // STOP PLAYER
-        // =========================================
-
-        if (this.player.active) {
-            this.player.setVelocity(0, 0)
-            this.player.setAcceleration(0, 0)
-        }
-
-        // =========================================
-        // STOP ALIENS
-        // =========================================
-
-        this.aliens.forEach((alien) => {
-            if (alien.active) {
-                alien.setVelocity(0, 0)
-            }
-        })
-
-        // =========================================
-        // STOP LASERS
-        // =========================================
-
-        this.playerLasers.getChildren().forEach(
-            (child) => {
-                const laser =
-                    child as PlayerLaser
-
-                if (laser.active) {
-                    laser.setVelocity(0, 0)
-                }
-            }
-        )
-
-        // =========================================
-        // OVERLAY
-        // =========================================
-
-        const overlay = this.add.rectangle(
-            640,
-            360,
-            1280,
-            720,
-            0x000000,
-            0.75
-        )
-
-        // =========================================
-        // TITLE
-        // =========================================
-
-        const title = this.add.text(
-            640,
-            250,
-            'GAME OVER',
-            {
-                fontFamily: 'Arial',
-                fontSize: '64px',
-                color: '#ffffff',
-                fontStyle: 'bold'
-            }
-        ).setOrigin(0.5)
-
-        // =========================================
-        // WAVE REACHED
-        // =========================================
-
-        const wave = this.add.text(
-            640,
-            330,
-            `WAVE REACHED: ${this.currentWave}`,
-            {
-                fontFamily: 'Arial',
-                fontSize: '26px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5)
-
-        // =========================================
-        // RESTART BUTTON
-        // =========================================
-
-        const restartButton = this.add.text(
-            640,
-            430,
-            'RESTART',
-            {
-                fontFamily: 'Arial',
-                fontSize: '30px',
-                color: '#ffffff',
-                backgroundColor: '#222222',
-                padding: {
-                    left: 30,
-                    right: 30,
-                    top: 15,
-                    bottom: 15
-                }
-            }
-        )
-            .setOrigin(0.5)
-            .setInteractive({
-                useHandCursor: true
-            })
-
-        // =========================================
-        // BUTTON HOVER
-        // =========================================
-
-        restartButton.on(
-            'pointerover',
-            () => {
-                restartButton.setStyle({
-                    color: '#ffff00'
-                })
-            }
-        )
-
-        restartButton.on(
-            'pointerout',
-            () => {
-                restartButton.setStyle({
-                    color: '#ffffff'
-                })
-            }
-        )
-
-        // =========================================
-        // RESTART GAME
-        // =========================================
-
-        restartButton.on(
-            'pointerdown',
-            () => {
-                this.scene.restart()
-            }
-        )
-
-        // =========================================
-        // CONTAINER
-        // =========================================
-
-        this.gameOverContainer =
-            this.add.container(
-                0,
-                0,
-                [
-                    overlay,
-                    title,
-                    wave,
-                    restartButton
-                ]
-            )
-
-        this.gameOverContainer.setDepth(1000)
     }
 
     // =====================================================
@@ -446,20 +289,20 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     update() {
-        // =========================================
-        // GAME OVER
-        // =========================================
-
-        if (this.gameOver) {
-            return
-        }
 
         // =========================================
         // PLAYER DEAD
         // =========================================
 
         if (!this.player.active) {
-            this.showGameOver()
+
+            this.scene.start(
+                'GameOverScene',
+                {
+                    wave: this.currentWave
+                }
+            )
+
             return
         }
 
@@ -473,11 +316,16 @@ export class GameScene extends Phaser.Scene {
         // ALIENS
         // =========================================
 
-        this.aliens.forEach((alien) => {
-            if (alien.active) {
-                alien.update(this.player)
+        this.aliens.forEach(
+            (alien) => {
+
+                if (alien.active) {
+                    alien.update(
+                        this.player
+                    )
+                }
             }
-        })
+        )
 
         // =========================================
         // CLEAN DESTROYED ALIENS
@@ -485,7 +333,8 @@ export class GameScene extends Phaser.Scene {
 
         this.aliens =
             this.aliens.filter(
-                (alien) => alien.active
+                (alien) =>
+                    alien.active
             )
 
         // =========================================

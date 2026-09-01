@@ -3,6 +3,7 @@ import Phaser from 'phaser'
 import { BootScene } from './scenes/BootScene'
 import { GameScene } from './scenes/GameScene'
 import { MenuScene } from './scenes/MenuScene'
+import { GameOverScene } from './scenes/GameOverScene'
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
@@ -28,6 +29,7 @@ const config: Phaser.Types.Core.GameConfig = {
         BootScene,
         GameScene,
         MenuScene,
+        GameOverScene
     ]
 }
 
