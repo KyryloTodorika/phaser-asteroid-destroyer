@@ -4,6 +4,7 @@ import { BootScene } from './scenes/BootScene'
 import { GameScene } from './scenes/GameScene'
 import { MenuScene } from './scenes/MenuScene'
 import { GameOverScene } from './scenes/GameOverScene'
+import { SuperShotSelectScene } from './scenes/SuperShotSelectScene'
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
@@ -20,7 +21,7 @@ const config: Phaser.Types.Core.GameConfig = {
         default: 'arcade',
         arcade: {
             gravity: {x: 0, y: 0 },
-            debug: true
+            debug: false
         }
     },
 
@@ -30,7 +31,8 @@ const config: Phaser.Types.Core.GameConfig = {
         BootScene,
         GameScene,
         MenuScene,
-        GameOverScene
+        GameOverScene,
+        SuperShotSelectScene
     ]
 }
 

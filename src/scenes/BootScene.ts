@@ -25,6 +25,16 @@ export class BootScene extends Phaser.Scene {
             IMAGE_ASSETS.projectiles.enemyLaser
         )
 
+        this.load.image(
+            'explosion_shot',
+            'assets/images/projectiles/supershots/explosion_shot.png'
+        )
+
+        this.load.image(
+            'laser_beam',
+            'assets/images/projectiles/supershots/laser_beam.png'
+        )
+
         IMAGE_ASSETS.asteroids.forEach((path, index) => {
             this.load.image(`asteroid_${index + 1}`, path)
         })

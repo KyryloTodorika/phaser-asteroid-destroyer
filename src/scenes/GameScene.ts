@@ -626,7 +626,6 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     private showWaveComplete() {
-
         const text =
             this.add.text(
                 640,
@@ -643,16 +642,22 @@ export class GameScene extends Phaser.Scene {
             .setDepth(1000)
 
         this.time.delayedCall(
-            2000,
+            1500,
             () => {
-
-                if (
-                    text.active
-                ) {
+                if (text.active) {
                     text.destroy()
                 }
 
-                this.startNextWave()
+                // Pause the current game
+                this.scene.pause()
+
+                // Open the supershot selection screen
+                this.scene.launch(
+                    'SuperShotSelectScene',
+                    {
+                        wave: this.currentWave
+                    }
+                )
             }
         )
     }
@@ -661,7 +666,7 @@ export class GameScene extends Phaser.Scene {
     // NEXT WAVE
     // =====================================================
 
-    private startNextWave() {
+    public startNextWave() {
 
         // =========================================
         // NO MORE WAVES
