@@ -7,6 +7,7 @@ import { Alien } from '../entities/Alien'
 
 import { WaveManager } from '../systems/WaveManager'
 import type { WaveConfig } from '../data/waves'
+import { GameUI } from '../ui/GameUI'
 
 export class GameScene extends Phaser.Scene {
 
@@ -40,8 +41,7 @@ export class GameScene extends Phaser.Scene {
     // UI
     // =====================================================
 
-    private healthText!: Phaser.GameObjects.Text
-    private waveText!: Phaser.GameObjects.Text
+    private ui!: GameUI
 
     // =====================================================
     // WAVE SYSTEM
@@ -109,7 +109,8 @@ export class GameScene extends Phaser.Scene {
         // UI
         // =========================================
 
-        this.createUI()
+        this.ui = new GameUI(this)
+        this.ui.create(this.currentWave)
 
         // =========================================
         // PLAYER
@@ -156,37 +157,6 @@ export class GameScene extends Phaser.Scene {
     // UI
     // =====================================================
 
-    private createUI() {
-
-        this.healthText =
-            this.add.text(
-                30,
-                25,
-                'HEALTH: 100',
-                {
-                    fontFamily: 'Arial',
-                    fontSize: '24px',
-                    color: '#ffffff'
-                }
-            )
-
-        this.waveText =
-            this.add.text(
-                640,
-                25,
-                `WAVE: ${this.currentWave}`,
-                {
-                    fontFamily: 'Arial',
-                    fontSize: '24px',
-                    color: '#ffffff'
-                }
-            )
-            .setOrigin(
-                0.5,
-                0
-            )
-    }
-
     private updateHealthUI() {
 
         if (
@@ -196,8 +166,8 @@ export class GameScene extends Phaser.Scene {
             return
         }
 
-        this.healthText.setText(
-            `HEALTH: ${this.player.getHealth()}`
+        this.ui.updateHealth(
+            this.player.getHealth()
         )
     }
 
@@ -236,9 +206,7 @@ export class GameScene extends Phaser.Scene {
         // UPDATE WAVE UI
         // =========================================
 
-        this.waveText.setText(
-            `WAVE: ${this.currentWave}`
-        )
+        this.ui.updateWave(this.currentWave)
 
         // =========================================
         // ASTEROIDS
@@ -626,36 +594,18 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     private showWaveComplete() {
-        const text =
-            this.add.text(
-                640,
-                300,
-                `WAVE ${this.currentWave} COMPLETE`,
-                {
-                    fontFamily: 'Arial',
-                    fontSize: '48px',
-                    color: '#ffffff',
-                    fontStyle: 'bold'
-                }
-            )
-            .setOrigin(0.5)
-            .setDepth(1000)
-
-        this.time.delayedCall(
-            1500,
+        this.ui.showWaveComplete(
+            this.currentWave,
             () => {
-                if (text.active) {
-                    text.destroy()
-                }
-
                 // Pause the current game
                 this.scene.pause()
 
-                // Open the supershot selection screen
+                // Open ability selection
                 this.scene.launch(
                     'SuperShotSelectScene',
                     {
-                        wave: this.currentWave
+                        wave:
+                            this.currentWave
                     }
                 )
             }
@@ -790,5 +740,9 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.updateHealthUI()
+    }
+
+    public getPlayer(): Player {
+        return this.player
     }
 }
