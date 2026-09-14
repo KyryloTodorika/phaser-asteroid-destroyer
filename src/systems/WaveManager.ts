@@ -1,16 +1,11 @@
-import Phaser from 'phaser'
 import { WAVE_CONFIGS } from '../data/waves'
 import type { WaveConfig } from '../data/waves'
 
 export class WaveManager {
 
-    private scene: Phaser.Scene
-
     private currentWave: number = 1
 
-    constructor(scene: Phaser.Scene) {
-        this.scene = scene
-    }
+    constructor() {}
 
     getCurrentWave(): number {
         return this.currentWave

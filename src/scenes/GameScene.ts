@@ -4,6 +4,9 @@ import { Player } from '../entities/Player'
 import { PlayerLaser } from '../entities/PlayerLaser'
 import { Asteroid } from '../entities/Asteroid'
 import { Alien } from '../entities/Alien'
+import type { AlienType } from '../entities/Alien'
+import { EnemyLaser } from '../entities/EnemyLaser'
+import { BlackHole } from '../entities/BlackHole'
 
 import { WaveManager } from '../systems/WaveManager'
 import type { WaveConfig } from '../data/waves'
@@ -30,12 +33,14 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     private asteroidGroup!: Phaser.Physics.Arcade.Group
+    private blackHoleGroup!: Phaser.Physics.Arcade.Group
 
     // =====================================================
     // PROJECTILES
     // =====================================================
 
     private playerLasers!: Phaser.Physics.Arcade.Group
+    private enemyLasers!: Phaser.Physics.Arcade.Group
 
     // =====================================================
     // UI
@@ -99,10 +104,16 @@ export class GameScene extends Phaser.Scene {
         this.playerLasers =
             this.physics.add.group()
 
+        this.enemyLasers =
+            this.physics.add.group()
+
         this.alienGroup =
             this.physics.add.group()
 
         this.asteroidGroup =
+            this.physics.add.group()
+
+        this.blackHoleGroup =
             this.physics.add.group()
 
         // =========================================
@@ -129,7 +140,7 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.waveManager =
-            new WaveManager(this)
+            new WaveManager()
 
         this.currentWave =
             this.waveManager.getCurrentWave()
@@ -221,6 +232,10 @@ export class GameScene extends Phaser.Scene {
             this.createAsteroid()
         }
 
+        for (let i = 0; i < config.blackHoles.count; i++) {
+            this.createBlackHole()
+        }
+
         // =========================================
         // ALIENS
         // =========================================
@@ -231,7 +246,13 @@ export class GameScene extends Phaser.Scene {
             i++
         ) {
 
-            this.createAlien()
+            this.createAlien('standard')
+        }
+
+        for (const type of ['fast', 'fat', 'shooter'] as AlienType[]) {
+            for (let i = 0; i < config.aliens[type]; i++) {
+                this.createAlien(type)
+            }
         }
     }
 
@@ -321,7 +342,7 @@ export class GameScene extends Phaser.Scene {
     // CREATE ALIEN
     // =====================================================
 
-    private createAlien() {
+    private createAlien(type: AlienType) {
 
         let x: number
         let y: number
@@ -362,8 +383,7 @@ export class GameScene extends Phaser.Scene {
                 this,
                 x,
                 y,
-                'alien_standard',
-                70
+                type
             )
 
         // =========================================
@@ -377,6 +397,25 @@ export class GameScene extends Phaser.Scene {
         this.alienGroup.add(
             alien
         )
+    }
+
+    // =====================================================
+    // CREATE BLACK HOLE
+    // =====================================================
+
+    private createBlackHole() {
+        let x: number
+        let y: number
+
+        do {
+            x = Phaser.Math.Between(140, 1140)
+            y = Phaser.Math.Between(140, 580)
+        } while (
+            Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) < 250
+        )
+
+        const blackHole = new BlackHole(this, x, y)
+        this.blackHoleGroup.add(blackHole)
     }
 
     // =====================================================
@@ -463,6 +502,50 @@ export class GameScene extends Phaser.Scene {
             this.asteroidGroup
         )
 
+        // =========================================
+        // PLAYER <-> BLACK HOLES
+        // =========================================
+
+        this.physics.add.overlap(
+            this.player,
+            this.blackHoleGroup,
+            () => {
+                if (!this.player.active || this.waveComplete) {
+                    return
+                }
+
+                this.player.takeDamage(30)
+            }
+        )
+
+        // =========================================
+        // LASERS -> BLACK HOLES
+        // =========================================
+
+        this.physics.add.overlap(
+            this.playerLasers,
+            this.blackHoleGroup,
+            (laserObject) => {
+                const laser = laserObject as PlayerLaser
+
+                if (laser.active) {
+                    laser.destroy()
+                }
+            }
+        )
+
+        this.physics.add.overlap(
+            this.enemyLasers,
+            this.blackHoleGroup,
+            (laserObject) => {
+                const laser = laserObject as EnemyLaser
+
+                if (laser.active) {
+                    laser.destroy()
+                }
+            }
+        )
+
         this.physics.add.overlap(
             this.playerLasers,
             this.asteroidGroup,
@@ -496,6 +579,25 @@ export class GameScene extends Phaser.Scene {
                         damage
                     )
                 }
+            }
+        )
+
+        // =========================================
+        // ENEMY LASER -> PLAYER
+        // =========================================
+
+        this.physics.add.overlap(
+            this.enemyLasers,
+            this.player,
+            (laserObject) => {
+                const laser = laserObject as EnemyLaser
+
+                if (!laser.active || !this.player.active || this.waveComplete) {
+                    return
+                }
+
+                laser.destroy()
+                this.player.takeDamage(12)
             }
         )
 
@@ -643,6 +745,11 @@ export class GameScene extends Phaser.Scene {
             true
         )
 
+        this.blackHoleGroup.clear(
+            true,
+            true
+        )
+
         // =========================================
         // CLEAR OLD ALIENS
         // =========================================
@@ -651,6 +758,8 @@ export class GameScene extends Phaser.Scene {
             true,
             true
         )
+
+        this.enemyLasers.clear(true, true)
 
         this.aliens = []
 
@@ -712,9 +821,11 @@ export class GameScene extends Phaser.Scene {
                     alien.active
                 ) {
 
-                    alien.update(
-                        this.player
-                    )
+                    const shouldShoot = alien.update(this.player, this.time.now)
+
+                    if (shouldShoot) {
+                        this.createEnemyLaser(alien)
+                    }
                 }
             }
         )
@@ -744,5 +855,22 @@ export class GameScene extends Phaser.Scene {
 
     public getPlayer(): Player {
         return this.player
+    }
+
+    private createEnemyLaser(alien: Alien) {
+        const direction = new Phaser.Math.Vector2(
+            this.player.x - alien.x,
+            this.player.y - alien.y
+        ).normalize()
+
+        const laser = new EnemyLaser(
+            this,
+            alien.x + direction.x * 35,
+            alien.y + direction.y * 35,
+            Phaser.Math.Angle.Between(0, 0, direction.x, direction.y) + Math.PI / 2
+        )
+
+        this.enemyLasers.add(laser)
+        laser.setVelocity(direction.x * 350, direction.y * 350)
     }
 }

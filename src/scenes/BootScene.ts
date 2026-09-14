@@ -15,6 +15,10 @@ export class BootScene extends Phaser.Scene {
             IMAGE_ASSETS.enemies.standard
         )
 
+        this.load.image('alien_fast', IMAGE_ASSETS.enemies.fast)
+        this.load.image('alien_fat', IMAGE_ASSETS.enemies.fat)
+        this.load.image('alien_shooter', IMAGE_ASSETS.enemies.shooter)
+
         this.load.image(
             'player_laser',
             IMAGE_ASSETS.projectiles.playerLaser
@@ -38,6 +42,8 @@ export class BootScene extends Phaser.Scene {
         IMAGE_ASSETS.asteroids.forEach((path, index) => {
             this.load.image(`asteroid_${index + 1}`, path)
         })
+
+        this.load.image('black_hole', IMAGE_ASSETS.blackholes.blackHole)
     }
 
     create() {

@@ -5,6 +5,9 @@ export const IMAGE_ASSETS = {
 
     enemies: {
         standard: '/assets/images/enemies/alien_standard.png',
+        fast: '/assets/images/enemies/alien_fast.png',
+        fat: '/assets/images/enemies/alien_fat.png',
+        shooter: '/assets/images/enemies/alien_shooter.png',
     },
 
     projectiles: {
@@ -17,5 +20,9 @@ export const IMAGE_ASSETS = {
         '/assets/images/obstacles/asteroids/asteroid_2.png',
         '/assets/images/obstacles/asteroids/asteroid_3.png',
         '/assets/images/obstacles/asteroids/asteroid_4.png',
-    ]
+    ],
+
+    blackholes: {
+        blackHole: '/assets/images/obstacles/blackhole/blackhole.png',
+    }
 }
