@@ -48,7 +48,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     private superShotCooldownTimer?:
         Phaser.Time.TimerEvent
 
-    private aimDirection = new Phaser.Math.Vector2(1, 0)
+    private movementDirection = new Phaser.Math.Vector2(0, -1)
 
     // =========================================
     // PHYSICS GROUP
@@ -167,15 +167,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         )
 
-        scene.input.on(
-            'pointermove',
-            (pointer: Phaser.Input.Pointer) => {
-                this.updateAimDirection(
-                    pointer.worldX,
-                    pointer.worldY
-                )
-            }
-        )
     }
 
     update() {
@@ -221,6 +212,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             direction.length() > 0
         ) {
             direction.normalize()
+
+            this.movementDirection.copy(direction)
 
             this.setAcceleration(
                 direction.x *
@@ -309,8 +302,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         direction.normalize()
-
-        this.aimDirection.copy(direction)
 
         // =========================================
         // LASER START POSITION
@@ -431,26 +422,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.emit(
             'supershot',
-            this.superShot,
-            this.x,
-            this.y,
-            this.aimDirection.x,
-            this.aimDirection.y
+            this.superShot
         )
     }
 
-    private updateAimDirection(
-        targetX: number,
-        targetY: number
-    ) {
-        const direction = new Phaser.Math.Vector2(
-            targetX - this.x,
-            targetY - this.y
-        )
-
-        if (direction.lengthSq() > 0) {
-            this.aimDirection.copy(direction.normalize())
-        }
+    getMovementDirection(): Phaser.Math.Vector2 {
+        return this.movementDirection
     }
 
     // =====================================================

@@ -143,20 +143,8 @@ export class GameScene extends Phaser.Scene {
 
         this.player.on(
             'supershot',
-            (
-                type: SuperShotType,
-                x: number,
-                y: number,
-                directionX: number,
-                directionY: number
-            ) => {
-                this.fireSuperShot(
-                    type,
-                    x,
-                    y,
-                    directionX,
-                    directionY
-                )
+            (type: SuperShotType) => {
+                this.fireSuperShot(type)
             }
         )
 
@@ -945,26 +933,15 @@ export class GameScene extends Phaser.Scene {
     }
 
     private fireSuperShot(
-        type: SuperShotType,
-        x: number,
-        y: number,
-        directionX: number,
-        directionY: number
+        type: SuperShotType
     ) {
         if (type !== 'laser') {
             return
         }
 
-        const direction = new Phaser.Math.Vector2(
-            directionX,
-            directionY
-        ).normalize()
-
         const shot = new LaserBeam(
             this,
-            x + direction.x * 90,
-            y + direction.y * 90,
-            direction
+            this.player
         )
 
         this.superShots.add(shot)
