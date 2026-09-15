@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 
 export class PlayerLaser extends Phaser.Physics.Arcade.Sprite {
+    static readonly speed: number = 600
+
     private readonly damage: number = 10
 
     constructor(

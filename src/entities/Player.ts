@@ -357,8 +357,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // =========================================
 
         laser.setVelocity(
-            direction.x * 600,
-            direction.y * 600
+            direction.x * PlayerLaser.speed,
+            direction.y * PlayerLaser.speed
         )
 
         // =========================================
@@ -420,9 +420,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // TEMPORARY ABILITY EVENT
         // =========================================
 
+        const pointer = this.scene.input.activePointer
+        const aimDirection = new Phaser.Math.Vector2(
+            pointer.worldX - this.x,
+            pointer.worldY - this.y
+        )
+
+        if (aimDirection.lengthSq() === 0) {
+            aimDirection.copy(this.movementDirection)
+        } else {
+            aimDirection.normalize()
+        }
+
         this.emit(
             'supershot',
-            this.superShot
+            this.superShot,
+            aimDirection.x,
+            aimDirection.y
         )
     }
 

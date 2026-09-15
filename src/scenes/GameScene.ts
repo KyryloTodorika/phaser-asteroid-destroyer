@@ -8,6 +8,7 @@ import type { AlienType } from '../entities/Alien'
 import { EnemyLaser } from '../entities/EnemyLaser'
 import { BlackHole } from '../entities/BlackHole'
 import { LaserBeam } from '../entities/LaserBeam'
+import { ExplosionShot } from '../entities/ExplosionShot'
 import type { SuperShotType } from '../entities/SuperShot'
 
 import { WaveManager } from '../systems/WaveManager'
@@ -44,6 +45,7 @@ export class GameScene extends Phaser.Scene {
     private playerLasers!: Phaser.Physics.Arcade.Group
     private enemyLasers!: Phaser.Physics.Arcade.Group
     private superShots!: Phaser.Physics.Arcade.Group
+    private bombShots!: Phaser.Physics.Arcade.Group
 
     // =====================================================
     // UI
@@ -113,6 +115,9 @@ export class GameScene extends Phaser.Scene {
         this.superShots =
             this.physics.add.group()
 
+        this.bombShots =
+            this.physics.add.group()
+
         this.alienGroup =
             this.physics.add.group()
 
@@ -143,8 +148,16 @@ export class GameScene extends Phaser.Scene {
 
         this.player.on(
             'supershot',
-            (type: SuperShotType) => {
-                this.fireSuperShot(type)
+            (
+                type: SuperShotType,
+                directionX: number,
+                directionY: number
+            ) => {
+                this.fireSuperShot(
+                    type,
+                    directionX,
+                    directionY
+                )
             }
         )
 
@@ -575,6 +588,42 @@ export class GameScene extends Phaser.Scene {
             }
         )
 
+        // =========================================
+        // EXPLOSION SHOT
+        // =========================================
+
+        this.physics.add.overlap(
+            this.bombShots,
+            this.blackHoleGroup,
+            (shotObject) => {
+                this.detonateExplosionShot(
+                    shotObject as ExplosionShot
+                )
+            }
+        )
+
+        this.physics.add.overlap(
+            this.bombShots,
+            this.asteroidGroup,
+            (shotObject) => {
+                this.detonateExplosionShot(
+                    shotObject as ExplosionShot
+                )
+            }
+        )
+
+        this.physics.add.overlap(
+            this.bombShots,
+            this.alienGroup,
+            (shotObject) => {
+                if (!this.waveComplete) {
+                    this.detonateExplosionShot(
+                        shotObject as ExplosionShot
+                    )
+                }
+            }
+        )
+
         this.physics.add.overlap(
             this.superShots,
             this.asteroidGroup,
@@ -828,6 +877,7 @@ export class GameScene extends Phaser.Scene {
 
         this.enemyLasers.clear(true, true)
         this.superShots.clear(true, true)
+        this.bombShots.clear(true, true)
 
         this.aliens = []
 
@@ -886,6 +936,27 @@ export class GameScene extends Phaser.Scene {
         this.player.update()
 
         // =========================================
+        // EXPLOSION SHOT -> WORLD BOUNDS
+        // =========================================
+
+        this.bombShots.getChildren().forEach(shotObject => {
+            const shot = shotObject as ExplosionShot
+            const body = shot.body as Phaser.Physics.Arcade.Body
+
+            if (
+                shot.active &&
+                (
+                    body.blocked.left ||
+                    body.blocked.right ||
+                    body.blocked.up ||
+                    body.blocked.down
+                )
+            ) {
+                this.detonateExplosionShot(shot)
+            }
+        })
+
+        // =========================================
         // ALIENS
         // =========================================
 
@@ -933,18 +1004,121 @@ export class GameScene extends Phaser.Scene {
     }
 
     private fireSuperShot(
-        type: SuperShotType
+        type: SuperShotType,
+        directionX: number,
+        directionY: number
     ) {
-        if (type !== 'laser') {
+        if (type === 'laser') {
+            const shot = new LaserBeam(
+                this,
+                this.player
+            )
+
+            this.superShots.add(shot)
             return
         }
 
-        const shot = new LaserBeam(
+        const direction = new Phaser.Math.Vector2(
+            directionX,
+            directionY
+        ).normalize()
+
+        const shot = new ExplosionShot(
             this,
-            this.player
+            this.player.x + direction.x * 55,
+            this.player.y + direction.y * 55,
+            direction
         )
 
-        this.superShots.add(shot)
+        this.bombShots.add(shot)
+        shot.launch(direction)
+    }
+
+    private detonateExplosionShot(
+        shot: ExplosionShot
+    ) {
+        if (!shot.active) {
+            return
+        }
+
+        const explosionX = shot.x
+        const explosionY = shot.y
+
+        if (!shot.detonate()) {
+            return
+        }
+
+        this.damageObjectsInBlast(
+            this.asteroidGroup,
+            explosionX,
+            explosionY,
+            (asteroid, damage) => {
+                (asteroid as Asteroid).takeDamage(damage)
+            }
+        )
+
+        this.damageObjectsInBlast(
+            this.alienGroup,
+            explosionX,
+            explosionY,
+            (alien, damage) => {
+                (alien as Alien).takeDamage(damage)
+            }
+        )
+
+        const blast = this.add.circle(
+            explosionX,
+            explosionY,
+            ExplosionShot.blastRadius,
+            0xff8a00,
+            0.35
+        )
+        .setStrokeStyle(6, 0xffffaa, 0.9)
+        .setScale(0.15)
+        .setDepth(30)
+
+        this.tweens.add({
+            targets: blast,
+            scale: 1,
+            alpha: 0,
+            duration: 320,
+            ease: 'Quad.Out',
+            onComplete: () => blast.destroy()
+        })
+    }
+
+    private damageObjectsInBlast(
+        group: Phaser.Physics.Arcade.Group,
+        explosionX: number,
+        explosionY: number,
+        applyDamage: (
+            target: Phaser.GameObjects.GameObject,
+            damage: number
+        ) => void
+    ) {
+        group.getChildren().forEach(target => {
+            if (!target.active) {
+                return
+            }
+
+            const object = target as Phaser.GameObjects.Sprite
+            const targetRadius = Math.max(
+                object.displayWidth,
+                object.displayHeight
+            ) * 0.35
+
+            const distance = Phaser.Math.Distance.Between(
+                explosionX,
+                explosionY,
+                object.x,
+                object.y
+            )
+
+            if (distance <= ExplosionShot.blastRadius + targetRadius) {
+                applyDamage(target, ExplosionShot.blastDamage)
+            }
+        })
+
     }
 
     private createEnemyLaser(alien: Alien) {
