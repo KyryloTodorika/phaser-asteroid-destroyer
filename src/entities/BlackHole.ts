@@ -11,6 +11,6 @@ export class BlackHole extends Phaser.Physics.Arcade.Sprite {
         this.setImmovable(true)
 
         const body = this.body as Phaser.Physics.Arcade.Body
-        body.setCircle(30, 60, 32)
+        body.setCircle(240, 121, 9)
     }
 }
