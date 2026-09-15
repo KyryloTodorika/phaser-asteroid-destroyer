@@ -7,6 +7,8 @@ import { Alien } from '../entities/Alien'
 import type { AlienType } from '../entities/Alien'
 import { EnemyLaser } from '../entities/EnemyLaser'
 import { BlackHole } from '../entities/BlackHole'
+import { LaserBeam } from '../entities/LaserBeam'
+import type { SuperShotType } from '../entities/SuperShot'
 
 import { WaveManager } from '../systems/WaveManager'
 import type { WaveConfig } from '../data/waves'
@@ -41,6 +43,7 @@ export class GameScene extends Phaser.Scene {
 
     private playerLasers!: Phaser.Physics.Arcade.Group
     private enemyLasers!: Phaser.Physics.Arcade.Group
+    private superShots!: Phaser.Physics.Arcade.Group
 
     // =====================================================
     // UI
@@ -107,6 +110,9 @@ export class GameScene extends Phaser.Scene {
         this.enemyLasers =
             this.physics.add.group()
 
+        this.superShots =
+            this.physics.add.group()
+
         this.alienGroup =
             this.physics.add.group()
 
@@ -134,6 +140,25 @@ export class GameScene extends Phaser.Scene {
                 360,
                 this.playerLasers
             )
+
+        this.player.on(
+            'supershot',
+            (
+                type: SuperShotType,
+                x: number,
+                y: number,
+                directionX: number,
+                directionY: number
+            ) => {
+                this.fireSuperShot(
+                    type,
+                    x,
+                    y,
+                    directionX,
+                    directionY
+                )
+            }
+        )
 
         // =========================================
         // WAVE MANAGER
@@ -546,6 +571,60 @@ export class GameScene extends Phaser.Scene {
             }
         )
 
+        // =========================================
+        // SUPER SHOTS
+        // =========================================
+
+        this.physics.add.overlap(
+            this.superShots,
+            this.blackHoleGroup,
+            (shotObject) => {
+                const shot = shotObject as LaserBeam
+
+                if (shot.active) {
+                    shot.destroy()
+                }
+            }
+        )
+
+        this.physics.add.overlap(
+            this.superShots,
+            this.asteroidGroup,
+            (shotObject, asteroidObject) => {
+                const shot = shotObject as LaserBeam
+                const asteroid = asteroidObject as Asteroid
+
+                if (!shot.active || !asteroid.active) {
+                    return
+                }
+
+                const damage = shot.hit(asteroid)
+
+                if (damage > 0) {
+                    asteroid.takeDamage(damage)
+                }
+            }
+        )
+
+        this.physics.add.overlap(
+            this.superShots,
+            this.alienGroup,
+            (shotObject, alienObject) => {
+                const shot = shotObject as LaserBeam
+                const alien = alienObject as Alien
+
+                if (!shot.active || !alien.active || this.waveComplete) {
+                    return
+                }
+
+                const damage = shot.hit(alien)
+
+                if (damage > 0) {
+                    alien.takeDamage(damage)
+                }
+            }
+        )
+
         this.physics.add.overlap(
             this.playerLasers,
             this.asteroidGroup,
@@ -760,8 +839,16 @@ export class GameScene extends Phaser.Scene {
         )
 
         this.enemyLasers.clear(true, true)
+        this.superShots.clear(true, true)
 
         this.aliens = []
+
+        const selectedSuperShot =
+            this.registry.get('selectedSuperShot') as SuperShotType | undefined
+
+        if (selectedSuperShot) {
+            this.player.setSuperShot(selectedSuperShot)
+        }
 
         // =========================================
         // NEXT WAVE
@@ -855,6 +942,32 @@ export class GameScene extends Phaser.Scene {
 
     public getPlayer(): Player {
         return this.player
+    }
+
+    private fireSuperShot(
+        type: SuperShotType,
+        x: number,
+        y: number,
+        directionX: number,
+        directionY: number
+    ) {
+        if (type !== 'laser') {
+            return
+        }
+
+        const direction = new Phaser.Math.Vector2(
+            directionX,
+            directionY
+        ).normalize()
+
+        const shot = new LaserBeam(
+            this,
+            x + direction.x * 90,
+            y + direction.y * 90,
+            direction
+        )
+
+        this.superShots.add(shot)
     }
 
     private createEnemyLaser(alien: Alien) {

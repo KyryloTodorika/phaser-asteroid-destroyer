@@ -48,6 +48,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     private superShotCooldownTimer?:
         Phaser.Time.TimerEvent
 
+    private aimDirection = new Phaser.Math.Vector2(1, 0)
+
     // =========================================
     // PHYSICS GROUP
     // =========================================
@@ -162,6 +164,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         pointer.worldY
                     )
                 }
+            }
+        )
+
+        scene.input.on(
+            'pointermove',
+            (pointer: Phaser.Input.Pointer) => {
+                this.updateAimDirection(
+                    pointer.worldX,
+                    pointer.worldY
+                )
             }
         )
     }
@@ -298,6 +310,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         direction.normalize()
 
+        this.aimDirection.copy(direction)
+
         // =========================================
         // LASER START POSITION
         // =========================================
@@ -420,8 +434,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.superShot,
             this.x,
             this.y,
-            this.rotation
+            this.aimDirection.x,
+            this.aimDirection.y
         )
+    }
+
+    private updateAimDirection(
+        targetX: number,
+        targetY: number
+    ) {
+        const direction = new Phaser.Math.Vector2(
+            targetX - this.x,
+            targetY - this.y
+        )
+
+        if (direction.lengthSq() > 0) {
+            this.aimDirection.copy(direction.normalize())
+        }
     }
 
     // =====================================================
