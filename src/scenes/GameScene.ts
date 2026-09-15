@@ -703,9 +703,9 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.physics.add.overlap(
-            this.enemyLasers,
             this.player,
-            (laserObject) => {
+            this.enemyLasers,
+            (_playerObject, laserObject) => {
                 const laser = laserObject as EnemyLaser
 
                 if (!laser.active || !this.player.active || this.waveComplete) {
@@ -713,7 +713,9 @@ export class GameScene extends Phaser.Scene {
                 }
 
                 laser.destroy()
-                this.player.takeDamage(12)
+                this.player.takeDamage(
+                    laser.getDamage()
+                )
             }
         )
 

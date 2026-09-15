@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 
 export class EnemyLaser extends Phaser.Physics.Arcade.Sprite {
+    private readonly damage: number = 12
+
     constructor(
         scene: Phaser.Scene,
         x: number,
@@ -20,5 +22,9 @@ export class EnemyLaser extends Phaser.Physics.Arcade.Sprite {
                 this.destroy()
             }
         })
+    }
+
+    getDamage(): number {
+        return this.damage
     }
 }

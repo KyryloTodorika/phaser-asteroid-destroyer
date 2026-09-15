@@ -6,7 +6,7 @@ const ALIEN_STATS: Record<AlienType, { speed: number; health: number }> = {
     standard: { speed: 70, health: 30 },
     fast: { speed: 150, health: 20 },
     fat: { speed: 45, health: 100 },
-    shooter: { speed: 80, health: 45 }
+    shooter: { speed: 80, health: 20 }
 }
 
 export class Alien extends Phaser.Physics.Arcade.Sprite {
