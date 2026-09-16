@@ -118,9 +118,9 @@ export class BossScene extends Phaser.Scene {
         this.physics.add.collider(this.player, this.boss)
 
         this.physics.add.overlap(
-            this.playerLasers,
             this.boss,
-            (laserObject) => {
+            this.playerLasers,
+            (_bossObject, laserObject) => {
                 const laser = laserObject as PlayerLaser
 
                 if (!laser.active || !this.boss.active) {
@@ -134,9 +134,9 @@ export class BossScene extends Phaser.Scene {
         )
 
         this.physics.add.overlap(
-            this.laserBeams,
             this.boss,
-            (beamObject) => {
+            this.laserBeams,
+            (_bossObject, beamObject) => {
                 const beam = beamObject as LaserBeam
 
                 if (!beam.active || !this.boss.active) {
@@ -152,9 +152,9 @@ export class BossScene extends Phaser.Scene {
         )
 
         this.physics.add.overlap(
-            this.bombShots,
             this.boss,
-            (shotObject) => {
+            this.bombShots,
+            (_bossObject, shotObject) => {
                 this.detonateExplosionShot(
                     shotObject as ExplosionShot
                 )
