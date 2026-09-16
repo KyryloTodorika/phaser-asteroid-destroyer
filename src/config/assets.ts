@@ -1,5 +1,6 @@
 export const IMAGE_ASSETS = {
     background: '/assets/images/backgrounds/main_background.jpg',
+    bossBackground: '/assets/images/backgrounds/boss_fight_background.png',
 
     player: '/assets/images/player/spaceship.png',
 

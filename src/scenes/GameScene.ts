@@ -851,8 +851,11 @@ export class GameScene extends Phaser.Scene {
 
         this.stopRoundShot()
 
+        const selectedSuperShot =
+            this.registry.get('selectedSuperShot') as SuperShotType | undefined
+
         // =========================================
-        // NO MORE WAVES
+        // WAVE 10: BOSS FIGHT
         // =========================================
 
         if (
@@ -860,9 +863,9 @@ export class GameScene extends Phaser.Scene {
                 .hasNextWave()
         ) {
 
-            console.log(
-                'ALL WAVES COMPLETED'
-            )
+            this.scene.start('BossScene', {
+                superShot: selectedSuperShot
+            })
 
             return
         }
@@ -895,9 +898,6 @@ export class GameScene extends Phaser.Scene {
         this.bombShots.clear(true, true)
 
         this.aliens = []
-
-        const selectedSuperShot =
-            this.registry.get('selectedSuperShot') as SuperShotType | undefined
 
         if (selectedSuperShot) {
             this.player.setSuperShot(selectedSuperShot)
