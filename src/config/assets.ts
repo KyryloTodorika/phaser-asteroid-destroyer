@@ -16,6 +16,13 @@ export const IMAGE_ASSETS = {
         enemyLaser: '/assets/images/projectiles/enemy_laser.png',
     },
 
+    boosters: {
+        heal: '/assets/images/boosters/heal.png',
+        shield: '/assets/images/boosters/shield.png',
+        attackSpeed: '/assets/images/boosters/attack_speed.png',
+        superShotCharger: '/assets/images/boosters/super_shot_charger.png',
+    },
+
     asteroids: [
         '/assets/images/obstacles/asteroids/asteroid_1.png',
         '/assets/images/obstacles/asteroids/asteroid_2.png',

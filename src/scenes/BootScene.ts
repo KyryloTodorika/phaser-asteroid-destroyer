@@ -30,6 +30,11 @@ export class BootScene extends Phaser.Scene {
             IMAGE_ASSETS.projectiles.enemyLaser
         )
 
+        this.load.image('booster_heal', IMAGE_ASSETS.boosters.heal)
+        this.load.image('booster_shield', IMAGE_ASSETS.boosters.shield)
+        this.load.image('booster_attack_speed', IMAGE_ASSETS.boosters.attackSpeed)
+        this.load.image('booster_super_shot', IMAGE_ASSETS.boosters.superShotCharger)
+
         this.load.image(
             'explosion_shot',
             'assets/images/projectiles/supershots/explosion_shot.png'
