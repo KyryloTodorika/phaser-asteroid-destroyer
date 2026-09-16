@@ -9,6 +9,7 @@ import { EnemyLaser } from '../entities/EnemyLaser'
 import { BlackHole } from '../entities/BlackHole'
 import { LaserBeam } from '../entities/LaserBeam'
 import { ExplosionShot } from '../entities/ExplosionShot'
+import { RoundShot } from '../entities/RoundShot'
 import type { SuperShotType } from '../entities/SuperShot'
 
 import { WaveManager } from '../systems/WaveManager'
@@ -46,6 +47,8 @@ export class GameScene extends Phaser.Scene {
     private enemyLasers!: Phaser.Physics.Arcade.Group
     private superShots!: Phaser.Physics.Arcade.Group
     private bombShots!: Phaser.Physics.Arcade.Group
+
+    private roundShot?: RoundShot
 
     // =====================================================
     // UI
@@ -814,6 +817,8 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     private showWaveComplete() {
+        this.stopRoundShot()
+
         this.ui.showWaveComplete(
             this.currentWave,
             () => {
@@ -837,6 +842,8 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     public startNextWave() {
+
+        this.stopRoundShot()
 
         // =========================================
         // NO MORE WAVES
@@ -911,7 +918,7 @@ export class GameScene extends Phaser.Scene {
     // UPDATE
     // =====================================================
 
-    update() {
+    update(_time: number, delta: number) {
 
         // =========================================
         // PLAYER DEAD
@@ -936,6 +943,14 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.player.update()
+        this.roundShot?.update(delta)
+
+        if (
+            this.roundShot &&
+            !this.roundShot.isActive()
+        ) {
+            this.roundShot = undefined
+        }
 
         // =========================================
         // EXPLOSION SHOT -> WORLD BOUNDS
@@ -1020,6 +1035,11 @@ export class GameScene extends Phaser.Scene {
             return
         }
 
+        if (type === 'round') {
+            this.startRoundShot()
+            return
+        }
+
         const direction = new Phaser.Math.Vector2(
             directionX,
             directionY
@@ -1034,6 +1054,21 @@ export class GameScene extends Phaser.Scene {
 
         this.bombShots.add(shot)
         shot.launch(direction)
+    }
+
+    private startRoundShot() {
+        this.stopRoundShot()
+
+        this.roundShot = new RoundShot(
+            this,
+            this.player,
+            this.playerLasers
+        )
+    }
+
+    private stopRoundShot() {
+        this.roundShot?.destroy()
+        this.roundShot = undefined
     }
 
     private detonateExplosionShot(

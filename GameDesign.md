@@ -82,7 +82,7 @@ Explosionsangriff mit Flächenschaden.
 
 ### Rundschuss
 
-Das Raumschiff feuert in alle Richtungen.
+Das Raumschiff dreht sich für 3 Sekunden und feuert dabei in alle Richtungen.
 
 ## 6. Spielerposition und Bewegung
 

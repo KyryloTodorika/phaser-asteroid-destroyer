@@ -18,6 +18,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // =========================================
 
     private rotationSpeed: number = 0.06
+    private rotationLocked: boolean = false
 
     // =========================================
     // DAMAGE
@@ -237,6 +238,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.body?.velocity
 
         if (
+            !this.rotationLocked &&
             velocity &&
             velocity.length() > 5
         ) {
@@ -442,6 +444,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     getMovementDirection(): Phaser.Math.Vector2 {
         return this.movementDirection
+    }
+
+    setRotationLocked(locked: boolean) {
+        this.rotationLocked = locked
     }
 
     // =====================================================

@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { GameScene } from './GameScene'
+import type { SuperShotType } from '../entities/SuperShot'
 
 export class SuperShotSelectScene extends Phaser.Scene {
 
@@ -80,7 +81,7 @@ export class SuperShotSelectScene extends Phaser.Scene {
         // =========================================
 
         this.createAbilityCard(
-            400,
+            230,
             400,
             'explosion_shot',
             'EXPLOSION SHOT',
@@ -97,7 +98,7 @@ export class SuperShotSelectScene extends Phaser.Scene {
         // =========================================
 
         this.createAbilityCard(
-            880,
+            640,
             400,
             'laser_beam',
             'LASER BEAM',
@@ -105,6 +106,23 @@ export class SuperShotSelectScene extends Phaser.Scene {
             () => {
                 this.chooseAbility(
                     'laser'
+                )
+            }
+        )
+
+        // =========================================
+        // ROUND SHOT
+        // =========================================
+
+        this.createAbilityCard(
+            1050,
+            400,
+            'player',
+            'ROUND SHOT',
+            'The ship spins and fires\nin every direction for 3 seconds.',
+            () => {
+                this.chooseAbility(
+                    'round'
                 )
             }
         )
@@ -127,7 +145,7 @@ export class SuperShotSelectScene extends Phaser.Scene {
             this.add.rectangle(
                 x,
                 y,
-                350,
+                330,
                 400,
                 0x111827,
                 1
@@ -263,7 +281,7 @@ export class SuperShotSelectScene extends Phaser.Scene {
     }
 
     private chooseAbility(
-        ability: string
+        ability: SuperShotType
     ) {
         console.log(
             'Selected supershot:',
