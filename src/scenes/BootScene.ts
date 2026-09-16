@@ -18,6 +18,7 @@ export class BootScene extends Phaser.Scene {
         this.load.image('alien_fast', IMAGE_ASSETS.enemies.fast)
         this.load.image('alien_fat', IMAGE_ASSETS.enemies.fat)
         this.load.image('alien_shooter', IMAGE_ASSETS.enemies.shooter)
+        this.load.image('boss_spaceship', IMAGE_ASSETS.enemies.boss)
 
         this.load.image(
             'player_laser',

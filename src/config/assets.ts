@@ -8,6 +8,7 @@ export const IMAGE_ASSETS = {
         fast: '/assets/images/enemies/alien_fast.png',
         fat: '/assets/images/enemies/alien_fat.png',
         shooter: '/assets/images/enemies/alien_shooter.png',
+        boss: '/assets/images/enemies/boss_spaceship.png',
     },
 
     projectiles: {
