@@ -1,308 +1,108 @@
 import Phaser from 'phaser'
 import { GameScene } from './GameScene'
 import type { SuperShotType } from '../entities/SuperShot'
+import { addEyebrow, addScreenTreatment, titleStyle, UI } from '../ui/theme'
 
 export class SuperShotSelectScene extends Phaser.Scene {
-
-    private currentWave: number = 1
+    private currentWave = 1
 
     constructor() {
         super('SuperShotSelectScene')
     }
 
     init(data: { wave?: number }) {
-
-        this.currentWave =
-            data.wave ?? 1
+        this.currentWave = data.wave ?? 1
     }
 
     create() {
+        this.add.image(640, 360, 'background').setDisplaySize(1280, 720)
+        addScreenTreatment(this, 0.72)
+        addEyebrow(this, 76, `WAVE ${String(this.currentWave).padStart(2, '0')} COMPLETE`)
 
-        // =========================================
-        // BACKGROUND
-        // =========================================
+        this.add.text(640, 128, 'CHOOSE YOUR SUPERSHOT', {
+            ...titleStyle, fontSize: '42px', strokeThickness: 5, letterSpacing: 3
+        }).setOrigin(0.5)
+        this.add.text(640, 178, 'Your selection is armed for the next wave', {
+            fontFamily: 'Arial, sans-serif', fontSize: '15px', color: '#8ea4bd'
+        }).setOrigin(0.5)
 
-        this.add
-            .image(
-                640,
-                360,
-                'background'
-            )
-            .setDisplaySize(
-                1280,
-                720
-            )
+        this.createAbilityCard(230, '1', 'explosion_shot', 'EXPLOSION', 'AREA DAMAGE',
+            'Detonates on impact and\ndamages everything nearby.', 'explosion')
+        this.createAbilityCard(640, '2', 'laser_beam', 'LASER BEAM', 'PIERCING DAMAGE',
+            'Cuts a high-power path\nthrough clustered enemies.', 'laser')
+        this.createAbilityCard(1050, '3', 'player', 'ROUND SHOT', '360° COVERAGE',
+            'Spins the ship and fires\nin every direction.', 'round')
 
-        // Dark overlay
-        this.add.rectangle(
-            640,
-            360,
-            1280,
-            720,
-            0x000000,
-            0.75
-        )
+        this.add.text(640, 675, 'CLICK A CARD  •  OR PRESS 1 / 2 / 3', {
+            fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#7188a5', letterSpacing: 3
+        }).setOrigin(0.5)
 
-        // =========================================
-        // TITLE
-        // =========================================
-
-        this.add.text(
-            640,
-            100,
-            'CHOOSE YOUR SUPERSHOT',
-            {
-                fontFamily: 'Arial',
-                fontSize: '48px',
-                color: '#ffffff',
-                fontStyle: 'bold'
-            }
-        )
-        .setOrigin(0.5)
-
-        // =========================================
-        // SUBTITLE
-        // =========================================
-
-        this.add.text(
-            640,
-            165,
-            `WAVE ${this.currentWave} COMPLETE`,
-            {
-                fontFamily: 'Arial',
-                fontSize: '22px',
-                color: '#aaaaaa'
-            }
-        )
-        .setOrigin(0.5)
-
-        // =========================================
-        // EXPLOSION SHOT
-        // =========================================
-
-        this.createAbilityCard(
-            230,
-            400,
-            'explosion_shot',
-            'EXPLOSION SHOT',
-            'Creates a powerful explosion\nwhen the projectile hits.',
-            () => {
-                this.chooseAbility(
-                    'explosion'
-                )
-            }
-        )
-
-        // =========================================
-        // LASER BEAM
-        // =========================================
-
-        this.createAbilityCard(
-            640,
-            400,
-            'laser_beam',
-            'LASER BEAM',
-            'Fires a powerful beam\nin the shooting direction.',
-            () => {
-                this.chooseAbility(
-                    'laser'
-                )
-            }
-        )
-
-        // =========================================
-        // ROUND SHOT
-        // =========================================
-
-        this.createAbilityCard(
-            1050,
-            400,
-            'player',
-            'ROUND SHOT',
-            'The ship spins and fires\nin every direction for 3 seconds.',
-            () => {
-                this.chooseAbility(
-                    'round'
-                )
-            }
-        )
+        this.input.keyboard?.once('keydown-ONE', () => this.chooseAbility('explosion'))
+        this.input.keyboard?.once('keydown-TWO', () => this.chooseAbility('laser'))
+        this.input.keyboard?.once('keydown-THREE', () => this.chooseAbility('round'))
     }
 
     private createAbilityCard(
         x: number,
-        y: number,
+        key: string,
         texture: string,
         title: string,
+        tag: string,
         description: string,
-        callback: () => void
-    ) {
-
-        // =========================================
-        // CARD
-        // =========================================
-
-        const card =
-            this.add.rectangle(
-                x,
-                y,
-                330,
-                400,
-                0x111827,
-                1
-            )
-
-        card.setStrokeStyle(
-            2,
-            0xffffff,
-            0.3
-        )
-
-        // =========================================
-        // SPRITE
-        // =========================================
-
-        const image =
-            this.add.image(
-                x,
-                y - 90,
-                texture
-            )
-
-        image.setDisplaySize(
-            120,
-            120
-        )
-
-        // =========================================
-        // TITLE
-        // =========================================
-
-        this.add.text(
-            x,
-            y + 10,
-            title,
-            {
-                fontFamily: 'Arial',
-                fontSize: '28px',
-                color: '#ffffff',
-                fontStyle: 'bold'
-            }
-        )
-        .setOrigin(0.5)
-
-        // =========================================
-        // DESCRIPTION
-        // =========================================
-
-        this.add.text(
-            x,
-            y + 65,
-            description,
-            {
-                fontFamily: 'Arial',
-                fontSize: '17px',
-                color: '#bbbbbb',
-                align: 'center'
-            }
-        )
-        .setOrigin(0.5)
-
-        // =========================================
-        // SELECT BUTTON
-        // =========================================
-
-        const button =
-            this.add.text(
-                x,
-                y + 145,
-                'SELECT',
-                {
-                    fontFamily: 'Arial',
-                    fontSize: '22px',
-                    color: '#ffffff',
-                    backgroundColor: '#222222',
-                    padding: {
-                        left: 25,
-                        right: 25,
-                        top: 12,
-                        bottom: 12
-                    }
-                }
-            )
-            .setOrigin(0.5)
-            .setInteractive({
-                useHandCursor: true
-            })
-
-        // =========================================
-        // HOVER
-        // =========================================
-
-        button.on(
-            'pointerover',
-            () => {
-
-                card.setStrokeStyle(
-                    3,
-                    0xffffff,
-                    1
-                )
-
-                button.setStyle({
-                    color: '#ffff00'
-                })
-            }
-        )
-
-        button.on(
-            'pointerout',
-            () => {
-
-                card.setStrokeStyle(
-                    2,
-                    0xffffff,
-                    0.3
-                )
-
-                button.setStyle({
-                    color: '#ffffff'
-                })
-            }
-        )
-
-        // =========================================
-        // CLICK
-        // =========================================
-
-        button.on(
-            'pointerdown',
-            callback
-        )
-    }
-
-    private chooseAbility(
         ability: SuperShotType
     ) {
-        console.log(
-            'Selected supershot:',
-            ability
-        )
+        const y = 414
+        const glow = this.add.rectangle(x, y + 8, 338, 392, UI.violet, 0.08)
+        const card = this.add.rectangle(x, y, 338, 392, UI.panel, 0.95)
+            .setStrokeStyle(2, 0x5f7294, 0.55)
+            .setInteractive({ useHandCursor: true })
 
-        this.registry.set(
-            'selectedSuperShot',
-            ability
-        )
+        this.add.text(x - 142, y - 166, key.padStart(2, '0'), {
+            fontFamily: 'Trebuchet MS, Arial, sans-serif', fontSize: '14px', fontStyle: 'bold', color: '#54e7ff'
+        }).setOrigin(0.5)
+        this.add.text(x + 136, y - 166, 'MK II', {
+            fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#617691', letterSpacing: 2
+        }).setOrigin(0.5)
 
-        const gameScene =
-            this.scene.get('GameScene') as GameScene
+        const image = this.add.image(x, y - 78, texture).setDisplaySize(112, 112)
+        this.add.circle(x, y - 78, 74, UI.cyan, 0.04).setStrokeStyle(1, UI.cyan, 0.18)
 
-        // Stop the selection scene
+        const titleText = this.add.text(x, y + 16, title, {
+            fontFamily: 'Trebuchet MS, Arial, sans-serif', fontSize: '25px', fontStyle: 'bold',
+            color: UI.white, letterSpacing: 1
+        }).setOrigin(0.5)
+        this.add.text(x, y + 52, tag, {
+            fontFamily: 'Arial, sans-serif', fontSize: '10px', fontStyle: 'bold', color: '#a76cff', letterSpacing: 3
+        }).setOrigin(0.5)
+        this.add.text(x, y + 102, description, {
+            fontFamily: 'Arial, sans-serif', fontSize: '15px', color: '#9aabc0', align: 'center', lineSpacing: 6
+        }).setOrigin(0.5)
+        const selectText = this.add.text(x, y + 162, 'SELECT  →', {
+            fontFamily: 'Trebuchet MS, Arial, sans-serif', fontSize: '14px', fontStyle: 'bold', color: '#7188a5', letterSpacing: 2
+        }).setOrigin(0.5)
+
+        card.on('pointerover', () => {
+            card.setStrokeStyle(3, UI.cyan, 1).setFillStyle(0x101d3b, 1)
+            glow.setFillStyle(UI.cyan, 0.18)
+            titleText.setColor('#54e7ff')
+            selectText.setColor('#f5fbff')
+            this.tweens.add({ targets: [card, glow, image], y: '-=6', duration: 130, ease: 'Cubic.Out' })
+        })
+        card.on('pointerout', () => {
+            card.setStrokeStyle(2, 0x5f7294, 0.55).setFillStyle(UI.panel, 0.95)
+            glow.setFillStyle(UI.violet, 0.08)
+            titleText.setColor(UI.white)
+            selectText.setColor('#7188a5')
+            this.tweens.add({ targets: [card, glow, image], y: '+=6', duration: 130, ease: 'Cubic.Out' })
+        })
+        card.on('pointerdown', () => this.chooseAbility(ability))
+    }
+
+    private chooseAbility(ability: SuperShotType) {
+        this.registry.set('selectedSuperShot', ability)
+        const gameScene = this.scene.get('GameScene') as GameScene
         this.scene.stop()
-
-        // Resume the existing game
         this.scene.resume('GameScene')
-
-        // Start the next wave
         gameScene.startNextWave()
     }
 }

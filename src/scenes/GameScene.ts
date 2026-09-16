@@ -89,6 +89,8 @@ export class GameScene extends Phaser.Scene {
 
         this.waveInProgress = false
         this.waveComplete = false
+        this.currentWave = 1
+        this.registry.remove('selectedSuperShot')
 
         // =========================================
         // BACKGROUND
@@ -191,6 +193,10 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.updateHealthUI()
+        this.ui.updateSuperShot(
+            this.player.getSuperShotCooldownProgress(),
+            Boolean(this.registry.get('selectedSuperShot'))
+        )
     }
 
     // =====================================================
@@ -1014,6 +1020,10 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.updateHealthUI()
+        this.ui.updateSuperShot(
+            this.player.getSuperShotCooldownProgress(),
+            Boolean(this.registry.get('selectedSuperShot'))
+        )
     }
 
     public getPlayer(): Player {

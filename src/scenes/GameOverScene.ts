@@ -1,7 +1,8 @@
 import Phaser from 'phaser'
+import { addEyebrow, addScreenTreatment, createActionButton, titleStyle, UI } from '../ui/theme'
 
 export class GameOverScene extends Phaser.Scene {
-    private reachedWave: number = 1
+    private reachedWave = 1
 
     constructor() {
         super('GameOverScene')
@@ -12,106 +13,37 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     create() {
-        // =========================================
-        // BACKGROUND
-        // =========================================
+        this.add.image(640, 360, 'background').setDisplaySize(1280, 720)
+        addScreenTreatment(this, 0.74)
 
-        this.add
-            .image(640, 360, 'background')
-            .setDisplaySize(1280, 720)
+        this.add.rectangle(640, 352, 610, 474, UI.panel, 0.82)
+            .setStrokeStyle(1, UI.danger, 0.35)
 
-        // Dark overlay
-        this.add.rectangle(
-            640,
-            360,
-            1280,
-            720,
-            0x000000,
-            0.75
-        )
+        addEyebrow(this, 150, 'MISSION REPORT')
 
-        // =========================================
-        // GAME OVER
-        // =========================================
+        this.add.text(640, 220, 'SIGNAL LOST', {
+            ...titleStyle, fontSize: '58px', stroke: '#3b1025', strokeThickness: 8, letterSpacing: 4
+        }).setOrigin(0.5)
 
-        this.add.text(
-            640,
-            250,
-            'GAME OVER',
-            {
-                fontFamily: 'Arial',
-                fontSize: '64px',
-                color: '#ffffff',
-                fontStyle: 'bold'
-            }
-        ).setOrigin(0.5)
+        this.add.text(640, 276, 'Your ship was lost to the void', {
+            fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#8ea4bd'
+        }).setOrigin(0.5)
 
-        // =========================================
-        // WAVE
-        // =========================================
+        this.add.rectangle(640, 360, 360, 84, 0x071020, 0.9)
+            .setStrokeStyle(1, 0x627595, 0.35)
+        this.add.text(560, 344, 'WAVE REACHED', {
+            fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#7188a5', letterSpacing: 2
+        }).setOrigin(0.5)
+        this.add.text(720, 359, String(this.reachedWave).padStart(2, '0'), {
+            fontFamily: 'Trebuchet MS, Arial, sans-serif', fontSize: '42px', fontStyle: 'bold', color: '#f5fbff'
+        }).setOrigin(0.5)
 
-        this.add.text(
-            640,
-            330,
-            `WAVE REACHED: ${this.reachedWave}`,
-            {
-                fontFamily: 'Arial',
-                fontSize: '26px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5)
+        const restart = () => this.scene.start('GameScene')
+        createActionButton(this, 640, 470, 'RETRY MISSION', restart, 292)
+        this.add.text(640, 524, 'PRESS ENTER', {
+            fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#7188a5', letterSpacing: 3
+        }).setOrigin(0.5)
 
-        // =========================================
-        // RESTART BUTTON
-        // =========================================
-
-        const restartButton = this.add.text(
-            640,
-            430,
-            'RESTART',
-            {
-                fontFamily: 'Arial',
-                fontSize: '30px',
-                color: '#ffffff',
-                backgroundColor: '#222222',
-                padding: {
-                    left: 30,
-                    right: 30,
-                    top: 15,
-                    bottom: 15
-                }
-            }
-        )
-            .setOrigin(0.5)
-            .setInteractive({
-                useHandCursor: true
-            })
-
-        // Hover
-        restartButton.on(
-            'pointerover',
-            () => {
-                restartButton.setStyle({
-                    color: '#ffff00'
-                })
-            }
-        )
-
-        restartButton.on(
-            'pointerout',
-            () => {
-                restartButton.setStyle({
-                    color: '#ffffff'
-                })
-            }
-        )
-
-        // Restart
-        restartButton.on(
-            'pointerdown',
-            () => {
-                this.scene.start('GameScene')
-            }
-        )
+        this.input.keyboard?.once('keydown-ENTER', restart)
     }
 }
