@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 
 import { Boss } from '../entities/Boss'
+import { EnemyLaser } from '../entities/EnemyLaser'
 import { ExplosionShot } from '../entities/ExplosionShot'
 import { LaserBeam } from '../entities/LaserBeam'
 import { Player } from '../entities/Player'
@@ -16,6 +17,7 @@ export class BossScene extends Phaser.Scene {
     private bossHealthBar!: BossHealthBar
 
     private playerLasers!: Phaser.Physics.Arcade.Group
+    private enemyLasers!: Phaser.Physics.Arcade.Group
     private laserBeams!: Phaser.Physics.Arcade.Group
     private bombShots!: Phaser.Physics.Arcade.Group
 
@@ -49,6 +51,7 @@ export class BossScene extends Phaser.Scene {
         }).setDepth(100)
 
         this.playerLasers = this.physics.add.group()
+        this.enemyLasers = this.physics.add.group()
         this.laserBeams = this.physics.add.group()
         this.bombShots = this.physics.add.group()
 
@@ -79,7 +82,7 @@ export class BossScene extends Phaser.Scene {
         this.createCollisions()
     }
 
-    update(_time: number, delta: number) {
+    update(time: number, delta: number) {
         if (this.fightComplete) {
             return
         }
@@ -90,6 +93,11 @@ export class BossScene extends Phaser.Scene {
         }
 
         this.player.update()
+
+        if (this.boss.update(this.player, time)) {
+            this.fireBossLaser()
+        }
+
         this.roundShot?.update(delta)
 
         if (this.roundShot && !this.roundShot.isActive()) {
@@ -116,6 +124,25 @@ export class BossScene extends Phaser.Scene {
 
     private createCollisions() {
         this.physics.add.collider(this.player, this.boss)
+
+        this.physics.add.overlap(
+            this.player,
+            this.enemyLasers,
+            (_playerObject, laserObject) => {
+                const laser = laserObject as EnemyLaser
+
+                if (
+                    !laser.active ||
+                    !this.player.active ||
+                    this.fightComplete
+                ) {
+                    return
+                }
+
+                laser.destroy()
+                this.player.takeDamage(laser.getDamage())
+            }
+        )
 
         this.physics.add.overlap(
             this.boss,
@@ -160,6 +187,34 @@ export class BossScene extends Phaser.Scene {
                 )
             }
         )
+    }
+
+    private fireBossLaser() {
+        const direction = new Phaser.Math.Vector2(
+            this.player.x - this.boss.x,
+            this.player.y - this.boss.y
+        )
+
+        if (direction.lengthSq() === 0) {
+            return
+        }
+
+        direction.normalize()
+
+        const laser = new EnemyLaser(
+            this,
+            this.boss.x + direction.x * 150,
+            this.boss.y + direction.y * 150,
+            Phaser.Math.Angle.Between(
+                0,
+                0,
+                direction.x,
+                direction.y
+            ) + Math.PI / 2
+        )
+
+        this.enemyLasers.add(laser)
+        laser.setVelocity(direction.x * 350, direction.y * 350)
     }
 
     private fireSuperShot(
