@@ -4,6 +4,7 @@ import { titleStyle, UI } from './theme'
 export class GameUI {
     private healthText!: Phaser.GameObjects.Text
     private waveText!: Phaser.GameObjects.Text
+    private scoreText!: Phaser.GameObjects.Text
     private healthFill!: Phaser.GameObjects.Rectangle
     private superFill!: Phaser.GameObjects.Rectangle
     private superText!: Phaser.GameObjects.Text
@@ -34,10 +35,13 @@ export class GameUI {
         this.healthFill = this.scene.add.rectangle(42, 64, 246, 8, UI.cyan, 1)
             .setOrigin(0, 0.5).setDepth(902)
 
-        this.waveText = this.scene.add.text(640, 30, `WAVE ${String(wave).padStart(2, '0')}`, {
+        this.waveText = this.scene.add.text(640, 25, `WAVE ${String(wave).padStart(2, '0')}`, {
             fontFamily: 'Trebuchet MS, Arial, sans-serif', fontSize: '20px', fontStyle: 'bold', color: UI.white,
             letterSpacing: 4
         }).setOrigin(0.5, 0).setDepth(901)
+        this.scoreText = this.scene.add.text(640, 61, 'SCORE  000000', {
+            fontFamily: 'Arial, sans-serif', fontSize: '10px', fontStyle: 'bold', color: '#54e7ff', letterSpacing: 2
+        }).setOrigin(0.5).setDepth(901)
 
         this.scene.add.text(978, 32, 'SUPER SHOT', {
             fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#8ea4bd', letterSpacing: 2
@@ -65,6 +69,10 @@ export class GameUI {
 
     updateWave(wave: number) {
         this.waveText.setText(`WAVE ${String(wave).padStart(2, '0')}`)
+    }
+
+    updateScore(score: number) {
+        this.scoreText.setText(`SCORE  ${String(score).padStart(6, '0')}`)
     }
 
     updateSuperShot(progress: number, armed: boolean) {

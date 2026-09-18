@@ -11,6 +11,7 @@ import { Player } from '../entities/Player'
 import { PlayerLaser } from '../entities/PlayerLaser'
 import { RoundShot } from '../entities/RoundShot'
 import type { SuperShotType } from '../entities/SuperShot'
+import { SCORE_VALUES } from '../config/score'
 import { BossHealthBar } from '../ui/BossHealthBar'
 import { createActionButton, titleStyle } from '../ui/theme'
 
@@ -20,6 +21,7 @@ export class BossScene extends Phaser.Scene {
     private player!: Player
     private boss!: Boss
     private bossHealthBar!: BossHealthBar
+    private scoreText!: Phaser.GameObjects.Text
 
     private playerLasers!: Phaser.Physics.Arcade.Group
     private enemyLasers!: Phaser.Physics.Arcade.Group
@@ -37,6 +39,7 @@ export class BossScene extends Phaser.Scene {
         shooter: 0
     }
     private finalMovementStarted: boolean = false
+    private score: number = 0
 
     private roundShot?: RoundShot
     private selectedSuperShot?: SuperShotType
@@ -46,8 +49,9 @@ export class BossScene extends Phaser.Scene {
         super('BossScene')
     }
 
-    init(data: { superShot?: SuperShotType }) {
+    init(data: { superShot?: SuperShotType; score?: number }) {
         this.selectedSuperShot = data.superShot
+        this.score = data.score ?? 0
     }
 
     create() {
@@ -75,6 +79,19 @@ export class BossScene extends Phaser.Scene {
             color: '#f5fbff',
             letterSpacing: 2
         }).setDepth(100)
+
+        this.scoreText = this.add.text(
+            640,
+            30,
+            this.formatScore(),
+            {
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '13px',
+                fontStyle: 'bold',
+                color: '#54e7ff',
+                letterSpacing: 2
+            }
+        ).setOrigin(0.5).setDepth(100)
 
         this.playerLasers = this.physics.add.group()
         this.enemyLasers = this.physics.add.group()
@@ -116,7 +133,10 @@ export class BossScene extends Phaser.Scene {
         }
 
         if (!this.player.active) {
-            this.scene.start('GameOverScene', { wave: 10 })
+            this.scene.start('GameOverScene', {
+                wave: 10,
+                score: this.score
+            })
             return
         }
 
@@ -260,7 +280,7 @@ export class BossScene extends Phaser.Scene {
 
                 const damage = laser.getDamage()
                 laser.destroy()
-                asteroid.takeDamage(damage)
+                this.damageAsteroid(asteroid, damage)
             }
         )
 
@@ -277,7 +297,7 @@ export class BossScene extends Phaser.Scene {
 
                 const damage = laser.getDamage()
                 laser.destroy()
-                alien.takeDamage(damage)
+                this.damageAlien(alien, damage)
             }
         )
 
@@ -295,7 +315,7 @@ export class BossScene extends Phaser.Scene {
                 const damage = beam.hit(asteroid)
 
                 if (damage > 0) {
-                    asteroid.takeDamage(damage)
+                    this.damageAsteroid(asteroid, damage)
                 }
             }
         )
@@ -314,7 +334,7 @@ export class BossScene extends Phaser.Scene {
                 const damage = beam.hit(alien)
 
                 if (damage > 0) {
-                    alien.takeDamage(damage)
+                    this.damageAlien(alien, damage)
                 }
             }
         )
@@ -543,6 +563,26 @@ export class BossScene extends Phaser.Scene {
             return
         }
 
+        this.damageObjectsInBlast(
+            this.asteroidGroup,
+            explosionX,
+            explosionY,
+            target => this.damageAsteroid(
+                target as Asteroid,
+                ExplosionShot.blastDamage
+            )
+        )
+
+        this.damageObjectsInBlast(
+            this.alienGroup,
+            explosionX,
+            explosionY,
+            target => this.damageAlien(
+                target as Alien,
+                ExplosionShot.blastDamage
+            )
+        )
+
         if (this.boss.active) {
             const bossRadius = Math.max(
                 this.boss.displayWidth,
@@ -560,24 +600,6 @@ export class BossScene extends Phaser.Scene {
                 this.damageBoss(ExplosionShot.blastDamage)
             }
         }
-
-        this.damageObjectsInBlast(
-            this.asteroidGroup,
-            explosionX,
-            explosionY,
-            target => (target as Asteroid).takeDamage(
-                ExplosionShot.blastDamage
-            )
-        )
-
-        this.damageObjectsInBlast(
-            this.alienGroup,
-            explosionX,
-            explosionY,
-            target => (target as Alien).takeDamage(
-                ExplosionShot.blastDamage
-            )
-        )
 
         const blast = this.add.circle(
             explosionX,
@@ -629,6 +651,27 @@ export class BossScene extends Phaser.Scene {
         })
     }
 
+    private damageAlien(alien: Alien, amount: number) {
+        if (alien.takeDamage(amount)) {
+            this.addScore(SCORE_VALUES.alien[alien.getType()])
+        }
+    }
+
+    private damageAsteroid(asteroid: Asteroid, amount: number) {
+        if (asteroid.takeDamage(amount)) {
+            this.addScore(SCORE_VALUES.asteroid)
+        }
+    }
+
+    private addScore(points: number) {
+        this.score += points
+        this.scoreText.setText(this.formatScore())
+    }
+
+    private formatScore(): string {
+        return `SCORE  ${String(this.score).padStart(6, '0')}`
+    }
+
     private damageBoss(amount: number) {
         if (!this.boss.active || this.fightComplete) {
             return
@@ -641,6 +684,7 @@ export class BossScene extends Phaser.Scene {
         )
 
         if (this.boss.getHealth() === 0) {
+            this.addScore(SCORE_VALUES.boss)
             this.completeFight()
         }
     }
@@ -662,10 +706,20 @@ export class BossScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setDepth(201)
 
+        this.add.text(640, 355, `FINAL ${this.formatScore()}`, {
+            fontFamily: 'Trebuchet MS, Arial, sans-serif',
+            fontSize: '24px',
+            fontStyle: 'bold',
+            color: '#54e7ff',
+            letterSpacing: 3
+        })
+        .setOrigin(0.5)
+        .setDepth(201)
+
         createActionButton(
             this,
             640,
-            410,
+            440,
             'RETURN TO MENU',
             () => this.scene.start('MenuScene'),
             300

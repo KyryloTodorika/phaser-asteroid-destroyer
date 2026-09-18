@@ -94,10 +94,10 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
 
     takeDamage(
         amount: number
-    ) {
+    ): boolean {
 
         if (!this.active) {
-            return
+            return false
         }
 
         this.health -= amount
@@ -111,7 +111,10 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
             this.health = 0
 
             this.destroy()
+            return true
         }
+
+        return false
     }
 
     // =========================================

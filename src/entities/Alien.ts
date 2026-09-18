@@ -75,9 +75,9 @@ export class Alien extends Phaser.Physics.Arcade.Sprite {
         return false
     }
 
-    takeDamage(amount: number) {
+    takeDamage(amount: number): boolean {
         if (!this.active) {
-            return
+            return false
         }
 
         this.health -= amount
@@ -89,10 +89,17 @@ export class Alien extends Phaser.Physics.Arcade.Sprite {
         if (this.health <= 0) {
             this.health = 0
             this.destroy()
+            return true
         }
+
+        return false
     }
 
     getHealth(): number {
         return this.health
+    }
+
+    getType(): AlienType {
+        return this.alienType
     }
 }

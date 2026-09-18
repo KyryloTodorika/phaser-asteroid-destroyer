@@ -11,6 +11,7 @@ import { LaserBeam } from '../entities/LaserBeam'
 import { ExplosionShot } from '../entities/ExplosionShot'
 import { RoundShot } from '../entities/RoundShot'
 import type { SuperShotType } from '../entities/SuperShot'
+import { SCORE_VALUES } from '../config/score'
 
 import { WaveManager } from '../systems/WaveManager'
 import type { WaveConfig } from '../data/waves'
@@ -63,6 +64,7 @@ export class GameScene extends Phaser.Scene {
     private waveManager!: WaveManager
 
     private currentWave: number = 1
+    private score: number = 0
 
     private waveInProgress: boolean = false
     private waveComplete: boolean = false
@@ -90,6 +92,7 @@ export class GameScene extends Phaser.Scene {
         this.waveInProgress = false
         this.waveComplete = false
         this.currentWave = 1
+        this.score = 0
         this.registry.remove('selectedSuperShot')
 
         // =========================================
@@ -193,6 +196,7 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.updateHealthUI()
+        this.ui.updateScore(this.score)
         this.ui.updateSuperShot(
             this.player.getSuperShotCooldownProgress(),
             Boolean(this.registry.get('selectedSuperShot'))
@@ -523,7 +527,7 @@ export class GameScene extends Phaser.Scene {
                     alienObject as Alien
 
                 if (alien.active) {
-                    alien.takeDamage(10)
+                    this.damageAlien(alien, 10)
                 }
             }
         )
@@ -647,7 +651,7 @@ export class GameScene extends Phaser.Scene {
                 const damage = shot.hit(asteroid)
 
                 if (damage > 0) {
-                    asteroid.takeDamage(damage)
+                    this.damageAsteroid(asteroid, damage)
                 }
             }
         )
@@ -666,7 +670,7 @@ export class GameScene extends Phaser.Scene {
                 const damage = shot.hit(alien)
 
                 if (damage > 0) {
-                    alien.takeDamage(damage)
+                    this.damageAlien(alien, damage)
                 }
             }
         )
@@ -700,9 +704,7 @@ export class GameScene extends Phaser.Scene {
 
                 // Damage asteroid
                 if (asteroid.active) {
-                    asteroid.takeDamage(
-                        damage
-                    )
+                    this.damageAsteroid(asteroid, damage)
                 }
             }
         )
@@ -771,9 +773,7 @@ export class GameScene extends Phaser.Scene {
                     alien.active
                 ) {
 
-                    alien.takeDamage(
-                        damage
-                    )
+                    this.damageAlien(alien, damage)
                 }
             }
         )
@@ -814,6 +814,7 @@ export class GameScene extends Phaser.Scene {
 
         this.waveComplete = true
         this.waveInProgress = false
+        this.addScore(SCORE_VALUES.waveComplete)
 
         this.showWaveComplete()
     }
@@ -864,7 +865,8 @@ export class GameScene extends Phaser.Scene {
         ) {
 
             this.scene.start('BossScene', {
-                superShot: selectedSuperShot
+                superShot: selectedSuperShot,
+                score: this.score
             })
 
             return
@@ -937,7 +939,8 @@ export class GameScene extends Phaser.Scene {
             this.scene.start(
                 'GameOverScene',
                 {
-                    wave: this.currentWave
+                    wave: this.currentWave,
+                    score: this.score
                 }
             )
 
@@ -1100,7 +1103,7 @@ export class GameScene extends Phaser.Scene {
             explosionX,
             explosionY,
             (asteroid, damage) => {
-                (asteroid as Asteroid).takeDamage(damage)
+                this.damageAsteroid(asteroid as Asteroid, damage)
             }
         )
 
@@ -1109,7 +1112,7 @@ export class GameScene extends Phaser.Scene {
             explosionX,
             explosionY,
             (alien, damage) => {
-                (alien as Alien).takeDamage(damage)
+                this.damageAlien(alien as Alien, damage)
             }
         )
 
@@ -1166,6 +1169,23 @@ export class GameScene extends Phaser.Scene {
             }
         })
 
+    }
+
+    private damageAlien(alien: Alien, amount: number) {
+        if (alien.takeDamage(amount)) {
+            this.addScore(SCORE_VALUES.alien[alien.getType()])
+        }
+    }
+
+    private damageAsteroid(asteroid: Asteroid, amount: number) {
+        if (asteroid.takeDamage(amount)) {
+            this.addScore(SCORE_VALUES.asteroid)
+        }
+    }
+
+    private addScore(points: number) {
+        this.score += points
+        this.ui.updateScore(this.score)
     }
 
     private createEnemyLaser(alien: Alien) {

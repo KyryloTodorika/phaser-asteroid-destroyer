@@ -3,13 +3,15 @@ import { addEyebrow, addScreenTreatment, createActionButton, titleStyle, UI } fr
 
 export class GameOverScene extends Phaser.Scene {
     private reachedWave = 1
+    private score = 0
 
     constructor() {
         super('GameOverScene')
     }
 
-    init(data: { wave?: number }) {
+    init(data: { wave?: number; score?: number }) {
         this.reachedWave = data.wave ?? 1
+        this.score = data.score ?? 0
     }
 
     create() {
@@ -29,13 +31,19 @@ export class GameOverScene extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#8ea4bd'
         }).setOrigin(0.5)
 
-        this.add.rectangle(640, 360, 360, 84, 0x071020, 0.9)
+        this.add.rectangle(640, 360, 360, 128, 0x071020, 0.9)
             .setStrokeStyle(1, 0x627595, 0.35)
-        this.add.text(560, 344, 'WAVE REACHED', {
+        this.add.text(560, 326, 'WAVE REACHED', {
             fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#7188a5', letterSpacing: 2
         }).setOrigin(0.5)
-        this.add.text(720, 359, String(this.reachedWave).padStart(2, '0'), {
-            fontFamily: 'Trebuchet MS, Arial, sans-serif', fontSize: '42px', fontStyle: 'bold', color: '#f5fbff'
+        this.add.text(720, 326, String(this.reachedWave).padStart(2, '0'), {
+            fontFamily: 'Trebuchet MS, Arial, sans-serif', fontSize: '28px', fontStyle: 'bold', color: '#f5fbff'
+        }).setOrigin(0.5)
+        this.add.text(560, 394, 'FINAL SCORE', {
+            fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#7188a5', letterSpacing: 2
+        }).setOrigin(0.5)
+        this.add.text(720, 394, String(this.score).padStart(6, '0'), {
+            fontFamily: 'Trebuchet MS, Arial, sans-serif', fontSize: '28px', fontStyle: 'bold', color: '#54e7ff'
         }).setOrigin(0.5)
 
         const restart = () => this.scene.start('GameScene')
