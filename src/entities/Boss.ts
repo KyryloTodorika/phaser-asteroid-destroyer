@@ -3,6 +3,7 @@ import Phaser from 'phaser'
 export class Boss extends Phaser.Physics.Arcade.Sprite {
     static readonly maxHealth: number = 1500
     static readonly shootCooldown: number = 1000
+    static readonly movementSpeed: number = 100
 
     private health: number = Boss.maxHealth
     private lastShotAt: number = 0
@@ -18,7 +19,11 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this)
 
         this.setDisplaySize(340, 340)
+        this.setRotation(-Math.PI / 2)
         this.setImmovable(true)
+        this.setCollideWorldBounds(true)
+        this.setBounce(1)
+        this.setVelocityY(Boss.movementSpeed)
         this.setDepth(10)
 
         const body = this.body as Phaser.Physics.Arcade.Body
