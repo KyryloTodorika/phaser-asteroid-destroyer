@@ -1,5 +1,8 @@
 import Phaser from 'phaser'
 
+import { Alien } from '../entities/Alien'
+import type { AlienType } from '../entities/Alien'
+import { Asteroid } from '../entities/Asteroid'
 import { Boss } from '../entities/Boss'
 import { EnemyLaser } from '../entities/EnemyLaser'
 import { ExplosionShot } from '../entities/ExplosionShot'
@@ -11,6 +14,8 @@ import type { SuperShotType } from '../entities/SuperShot'
 import { BossHealthBar } from '../ui/BossHealthBar'
 import { createActionButton, titleStyle } from '../ui/theme'
 
+type BossSpawnPattern = 'asteroid' | 'fast' | 'fat' | 'shooter'
+
 export class BossScene extends Phaser.Scene {
     private player!: Player
     private boss!: Boss
@@ -20,6 +25,18 @@ export class BossScene extends Phaser.Scene {
     private enemyLasers!: Phaser.Physics.Arcade.Group
     private laserBeams!: Phaser.Physics.Arcade.Group
     private bombShots!: Phaser.Physics.Arcade.Group
+    private asteroidGroup!: Phaser.Physics.Arcade.Group
+    private alienGroup!: Phaser.Physics.Arcade.Group
+
+    private aliens: Alien[] = []
+    private unlockedSpawnPatterns = new Set<BossSpawnPattern>()
+    private lastSpawnAt: Record<BossSpawnPattern, number> = {
+        asteroid: 0,
+        fast: 0,
+        fat: 0,
+        shooter: 0
+    }
+    private finalMovementStarted: boolean = false
 
     private roundShot?: RoundShot
     private selectedSuperShot?: SuperShotType
@@ -36,6 +53,15 @@ export class BossScene extends Phaser.Scene {
     create() {
         this.fightComplete = false
         this.roundShot = undefined
+        this.aliens = []
+        this.unlockedSpawnPatterns.clear()
+        this.lastSpawnAt = {
+            asteroid: 0,
+            fast: 0,
+            fat: 0,
+            shooter: 0
+        }
+        this.finalMovementStarted = false
 
         this.add.image(640, 360, 'boss_background')
             .setDisplaySize(1280, 720)
@@ -54,6 +80,8 @@ export class BossScene extends Phaser.Scene {
         this.enemyLasers = this.physics.add.group()
         this.laserBeams = this.physics.add.group()
         this.bombShots = this.physics.add.group()
+        this.asteroidGroup = this.physics.add.group()
+        this.alienGroup = this.physics.add.group()
 
         this.player = new Player(
             this,
@@ -98,6 +126,16 @@ export class BossScene extends Phaser.Scene {
             this.fireBossLaser()
         }
 
+        this.updateBossPhases(time)
+
+        this.aliens.forEach(alien => {
+            if (alien.active && alien.update(this.player, time)) {
+                this.fireEnemyLaser(alien, 35)
+            }
+        })
+
+        this.aliens = this.aliens.filter(alien => alien.active)
+
         this.roundShot?.update(delta)
 
         if (this.roundShot && !this.roundShot.isActive()) {
@@ -124,6 +162,27 @@ export class BossScene extends Phaser.Scene {
 
     private createCollisions() {
         this.physics.add.collider(this.player, this.boss)
+        this.physics.add.collider(
+            this.player,
+            this.asteroidGroup,
+            () => {
+                if (this.player.active && !this.fightComplete) {
+                    this.player.takeDamage(10)
+                }
+            }
+        )
+        this.physics.add.collider(
+            this.player,
+            this.alienGroup,
+            () => {
+                if (this.player.active && !this.fightComplete) {
+                    this.player.takeDamage(20)
+                }
+            }
+        )
+        this.physics.add.collider(this.asteroidGroup, this.asteroidGroup)
+        this.physics.add.collider(this.boss, this.asteroidGroup)
+        this.physics.add.collider(this.boss, this.alienGroup)
 
         this.physics.add.overlap(
             this.player,
@@ -187,12 +246,229 @@ export class BossScene extends Phaser.Scene {
                 )
             }
         )
+
+        this.physics.add.overlap(
+            this.playerLasers,
+            this.asteroidGroup,
+            (laserObject, asteroidObject) => {
+                const laser = laserObject as PlayerLaser
+                const asteroid = asteroidObject as Asteroid
+
+                if (!laser.active || !asteroid.active) {
+                    return
+                }
+
+                const damage = laser.getDamage()
+                laser.destroy()
+                asteroid.takeDamage(damage)
+            }
+        )
+
+        this.physics.add.overlap(
+            this.playerLasers,
+            this.alienGroup,
+            (laserObject, alienObject) => {
+                const laser = laserObject as PlayerLaser
+                const alien = alienObject as Alien
+
+                if (!laser.active || !alien.active) {
+                    return
+                }
+
+                const damage = laser.getDamage()
+                laser.destroy()
+                alien.takeDamage(damage)
+            }
+        )
+
+        this.physics.add.overlap(
+            this.laserBeams,
+            this.asteroidGroup,
+            (beamObject, asteroidObject) => {
+                const beam = beamObject as LaserBeam
+                const asteroid = asteroidObject as Asteroid
+
+                if (!beam.active || !asteroid.active) {
+                    return
+                }
+
+                const damage = beam.hit(asteroid)
+
+                if (damage > 0) {
+                    asteroid.takeDamage(damage)
+                }
+            }
+        )
+
+        this.physics.add.overlap(
+            this.laserBeams,
+            this.alienGroup,
+            (beamObject, alienObject) => {
+                const beam = beamObject as LaserBeam
+                const alien = alienObject as Alien
+
+                if (!beam.active || !alien.active) {
+                    return
+                }
+
+                const damage = beam.hit(alien)
+
+                if (damage > 0) {
+                    alien.takeDamage(damage)
+                }
+            }
+        )
+
+        this.physics.add.overlap(
+            this.bombShots,
+            this.asteroidGroup,
+            shotObject => {
+                this.detonateExplosionShot(shotObject as ExplosionShot)
+            }
+        )
+
+        this.physics.add.overlap(
+            this.bombShots,
+            this.alienGroup,
+            shotObject => {
+                this.detonateExplosionShot(shotObject as ExplosionShot)
+            }
+        )
+    }
+
+    private updateBossPhases(time: number) {
+        const healthRatio = this.boss.getHealth() / Boss.maxHealth
+
+        this.updateSpawnPattern(
+            'asteroid',
+            healthRatio,
+            0.9,
+            3000,
+            time,
+            () => this.spawnAsteroid()
+        )
+        this.updateSpawnPattern(
+            'fast',
+            healthRatio,
+            0.75,
+            4500,
+            time,
+            () => this.spawnAlien('fast')
+        )
+        this.updateSpawnPattern(
+            'fat',
+            healthRatio,
+            0.65,
+            6000,
+            time,
+            () => this.spawnAlien('fat')
+        )
+        this.updateSpawnPattern(
+            'shooter',
+            healthRatio,
+            0.5,
+            5000,
+            time,
+            () => this.spawnAlien('shooter')
+        )
+
+        if (healthRatio < 0.25 && !this.finalMovementStarted) {
+            this.finalMovementStarted = true
+            this.boss.startArenaMovement()
+        }
+    }
+
+    private updateSpawnPattern(
+        pattern: BossSpawnPattern,
+        healthRatio: number,
+        threshold: number,
+        interval: number,
+        time: number,
+        spawn: () => void
+    ) {
+        if (healthRatio >= threshold) {
+            return
+        }
+
+        if (!this.unlockedSpawnPatterns.has(pattern)) {
+            this.unlockedSpawnPatterns.add(pattern)
+            this.lastSpawnAt[pattern] = time
+            spawn()
+            return
+        }
+
+        if (time - this.lastSpawnAt[pattern] >= interval) {
+            this.lastSpawnAt[pattern] = time
+            spawn()
+        }
+    }
+
+    private spawnAsteroid() {
+        const position = this.getSpawnPosition()
+        const texture = `asteroid_${Phaser.Math.Between(1, 4)}`
+        const asteroid = new Asteroid(
+            this,
+            position.x,
+            position.y,
+            texture,
+            150
+        )
+
+        const size = Phaser.Math.Between(80, 140)
+        asteroid.setDisplaySize(size, size)
+        this.asteroidGroup.add(asteroid)
+        asteroid.startMovement()
+    }
+
+    private spawnAlien(type: Exclude<AlienType, 'standard'>) {
+        const position = this.getSpawnPosition()
+        const alien = new Alien(this, position.x, position.y, type)
+
+        this.aliens.push(alien)
+        this.alienGroup.add(alien)
+    }
+
+    private getSpawnPosition(): Phaser.Math.Vector2 {
+        const position = new Phaser.Math.Vector2()
+
+        for (let attempt = 0; attempt < 30; attempt++) {
+            position.set(
+                Phaser.Math.Between(100, 1180),
+                Phaser.Math.Between(100, 620)
+            )
+
+            const farFromPlayer = Phaser.Math.Distance.Between(
+                position.x,
+                position.y,
+                this.player.x,
+                this.player.y
+            ) >= 250
+            const farFromBoss = Phaser.Math.Distance.Between(
+                position.x,
+                position.y,
+                this.boss.x,
+                this.boss.y
+            ) >= 220
+
+            if (farFromPlayer && farFromBoss) {
+                break
+            }
+        }
+
+        return position
     }
 
     private fireBossLaser() {
+        this.fireEnemyLaser(this.boss, 150)
+    }
+
+    private fireEnemyLaser(
+        shooter: Phaser.Physics.Arcade.Sprite,
+        offset: number
+    ) {
         const direction = new Phaser.Math.Vector2(
-            this.player.x - this.boss.x,
-            this.player.y - this.boss.y
+            this.player.x - shooter.x,
+            this.player.y - shooter.y
         )
 
         if (direction.lengthSq() === 0) {
@@ -203,8 +479,8 @@ export class BossScene extends Phaser.Scene {
 
         const laser = new EnemyLaser(
             this,
-            this.boss.x + direction.x * 150,
-            this.boss.y + direction.y * 150,
+            shooter.x + direction.x * offset,
+            shooter.y + direction.y * offset,
             Phaser.Math.Angle.Between(
                 0,
                 0,
@@ -285,6 +561,24 @@ export class BossScene extends Phaser.Scene {
             }
         }
 
+        this.damageObjectsInBlast(
+            this.asteroidGroup,
+            explosionX,
+            explosionY,
+            target => (target as Asteroid).takeDamage(
+                ExplosionShot.blastDamage
+            )
+        )
+
+        this.damageObjectsInBlast(
+            this.alienGroup,
+            explosionX,
+            explosionY,
+            target => (target as Alien).takeDamage(
+                ExplosionShot.blastDamage
+            )
+        )
+
         const blast = this.add.circle(
             explosionX,
             explosionY,
@@ -303,6 +597,35 @@ export class BossScene extends Phaser.Scene {
             duration: 320,
             ease: 'Quad.Out',
             onComplete: () => blast.destroy()
+        })
+    }
+
+    private damageObjectsInBlast(
+        group: Phaser.Physics.Arcade.Group,
+        explosionX: number,
+        explosionY: number,
+        applyDamage: (target: Phaser.GameObjects.GameObject) => void
+    ) {
+        group.getChildren().forEach(target => {
+            if (!target.active) {
+                return
+            }
+
+            const object = target as Phaser.GameObjects.Sprite
+            const targetRadius = Math.max(
+                object.displayWidth,
+                object.displayHeight
+            ) * 0.35
+            const distance = Phaser.Math.Distance.Between(
+                explosionX,
+                explosionY,
+                object.x,
+                object.y
+            )
+
+            if (distance <= ExplosionShot.blastRadius + targetRadius) {
+                applyDamage(target)
+            }
         })
     }
 

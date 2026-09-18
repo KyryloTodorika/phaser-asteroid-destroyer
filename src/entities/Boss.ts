@@ -4,6 +4,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
     static readonly maxHealth: number = 1500
     static readonly shootCooldown: number = 1000
     static readonly movementSpeed: number = 100
+    static readonly finalMovementSpeed: number = 200
 
     private health: number = Boss.maxHealth
     private lastShotAt: number = 0
@@ -42,6 +43,14 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
 
         this.lastShotAt = time
         return true
+    }
+
+    startArenaMovement() {
+        const direction = new Phaser.Math.Vector2(1, 1)
+            .normalize()
+            .scale(Boss.finalMovementSpeed)
+
+        this.setVelocity(direction.x, direction.y)
     }
 
     takeDamage(amount: number) {
