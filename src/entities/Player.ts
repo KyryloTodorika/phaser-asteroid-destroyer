@@ -627,6 +627,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         )
     }
 
+    resetBoosterEffects() {
+        this.attackSpeedBoosted = false
+        this.shootCooldown = Player.baseShootCooldown
+        this.canShoot = true
+
+        this.shieldTimer?.remove()
+        this.shieldTimer = undefined
+        this.shieldActive = false
+        this.clearTint()
+
+        this.superShotChargeTimer?.remove()
+        this.superShotChargeTimer = undefined
+        this.superShotChargeActive = false
+
+        this.superShotCooldownTimer?.remove()
+        this.superShotCooldownTimer = undefined
+        this.superShotCooldownStartedAt = 0
+        this.canUseSuperShot = true
+    }
+
     private startSuperShotCooldown() {
         this.canUseSuperShot = false
         this.superShotCooldownStartedAt = this.scene.time.now

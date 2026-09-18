@@ -3,9 +3,9 @@ import type { Player } from './Player'
 import { PlayerLaser } from './PlayerLaser'
 
 export class RoundShot {
-    private static readonly duration: number = 10000
-    private static readonly interval: number = 100
-    private static readonly projectileCount: number = 8
+    private static readonly duration: number = 3000
+    private static readonly interval: number = 250
+    private static readonly projectileCount: number = 12
     private static readonly rotationSpeed: number =
         Phaser.Math.DegToRad(600)
 

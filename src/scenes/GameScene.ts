@@ -864,6 +864,8 @@ export class GameScene extends Phaser.Scene {
     public startNextWave() {
 
         this.stopRoundShot()
+        this.clearWaveObjects()
+        this.player.resetBoosterEffects()
 
         const selectedSuperShot =
             this.registry.get('selectedSuperShot') as SuperShotType | undefined
@@ -885,35 +887,6 @@ export class GameScene extends Phaser.Scene {
             return
         }
 
-        // =========================================
-        // CLEAR OLD ASTEROIDS
-        // =========================================
-
-        this.asteroidGroup.clear(
-            true,
-            true
-        )
-
-        this.blackHoleGroup.clear(
-            true,
-            true
-        )
-
-        // =========================================
-        // CLEAR OLD ALIENS
-        // =========================================
-
-        this.alienGroup.clear(
-            true,
-            true
-        )
-
-        this.enemyLasers.clear(true, true)
-        this.superShots.clear(true, true)
-        this.bombShots.clear(true, true)
-
-        this.aliens = []
-
         if (selectedSuperShot) {
             this.player.setSuperShot(selectedSuperShot)
         }
@@ -933,6 +906,18 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.createWave()
+    }
+
+    private clearWaveObjects() {
+        this.playerLasers.clear(true, true)
+        this.enemyLasers.clear(true, true)
+        this.superShots.clear(true, true)
+        this.bombShots.clear(true, true)
+        this.boosterGroup.clear(true, true)
+        this.asteroidGroup.clear(true, true)
+        this.blackHoleGroup.clear(true, true)
+        this.alienGroup.clear(true, true)
+        this.aliens = []
     }
 
     // =====================================================

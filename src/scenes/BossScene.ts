@@ -14,6 +14,7 @@ import { RoundShot } from '../entities/RoundShot'
 import type { SuperShotType } from '../entities/SuperShot'
 import { SCORE_VALUES } from '../config/score'
 import { BossHealthBar } from '../ui/BossHealthBar'
+import { GameUI } from '../ui/GameUI'
 import { createActionButton, titleStyle } from '../ui/theme'
 
 type BossSpawnPattern = 'asteroid' | 'fast' | 'fat' | 'shooter'
@@ -22,7 +23,7 @@ export class BossScene extends Phaser.Scene {
     private player!: Player
     private boss!: Boss
     private bossHealthBar!: BossHealthBar
-    private scoreText!: Phaser.GameObjects.Text
+    private ui!: GameUI
 
     private playerLasers!: Phaser.Physics.Arcade.Group
     private enemyLasers!: Phaser.Physics.Arcade.Group
@@ -74,27 +75,6 @@ export class BossScene extends Phaser.Scene {
 
         this.add.rectangle(640, 360, 1280, 720, 0x020611, 0.24)
 
-        this.add.text(36, 28, 'WAVE 10  //  BOSS FIGHT', {
-            fontFamily: 'Trebuchet MS, Arial, sans-serif',
-            fontSize: '19px',
-            fontStyle: 'bold',
-            color: '#f5fbff',
-            letterSpacing: 2
-        }).setDepth(100)
-
-        this.scoreText = this.add.text(
-            640,
-            30,
-            this.formatScore(),
-            {
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '13px',
-                fontStyle: 'bold',
-                color: '#54e7ff',
-                letterSpacing: 2
-            }
-        ).setOrigin(0.5).setDepth(100)
-
         this.playerLasers = this.physics.add.group()
         this.enemyLasers = this.physics.add.group()
         this.laserBeams = this.physics.add.group()
@@ -114,6 +94,15 @@ export class BossScene extends Phaser.Scene {
             this.player.setSuperShot(this.selectedSuperShot)
         }
 
+        this.ui = new GameUI(this)
+        this.ui.create(10)
+        this.ui.updateHealth(this.player.getHealth())
+        this.ui.updateScore(this.score)
+        this.ui.updateSuperShot(
+            this.player.getSuperShotCooldownProgress(),
+            Boolean(this.selectedSuperShot)
+        )
+
         this.player.on(
             'supershot',
             (
@@ -124,7 +113,7 @@ export class BossScene extends Phaser.Scene {
         )
 
         this.boss = new Boss(this, 990, 360)
-        this.bossHealthBar = new BossHealthBar(this, 1240, 100)
+        this.bossHealthBar = new BossHealthBar(this, 1240, 130)
         this.bossHealthBar.update(Boss.maxHealth, Boss.maxHealth)
 
         this.createCollisions()
@@ -162,6 +151,12 @@ export class BossScene extends Phaser.Scene {
         })
 
         this.aliens = this.aliens.filter(alien => alien.active)
+
+        this.ui.updateHealth(this.player.getHealth())
+        this.ui.updateSuperShot(
+            this.player.getSuperShotCooldownProgress(),
+            Boolean(this.selectedSuperShot)
+        )
 
         this.roundShot?.update(delta)
 
@@ -719,7 +714,7 @@ export class BossScene extends Phaser.Scene {
 
     private addScore(points: number) {
         this.score += points
-        this.scoreText.setText(this.formatScore())
+        this.ui.updateScore(this.score)
     }
 
     private formatScore(): string {
