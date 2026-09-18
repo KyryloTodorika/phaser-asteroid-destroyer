@@ -11,6 +11,7 @@ import { LaserBeam } from '../entities/LaserBeam'
 import { ExplosionShot } from '../entities/ExplosionShot'
 import { RoundShot } from '../entities/RoundShot'
 import type { SuperShotType } from '../entities/SuperShot'
+import { Booster, BOOSTER_TYPES } from '../entities/Booster'
 import { SCORE_VALUES } from '../config/score'
 
 import { WaveManager } from '../systems/WaveManager'
@@ -48,6 +49,7 @@ export class GameScene extends Phaser.Scene {
     private enemyLasers!: Phaser.Physics.Arcade.Group
     private superShots!: Phaser.Physics.Arcade.Group
     private bombShots!: Phaser.Physics.Arcade.Group
+    private boosterGroup!: Phaser.Physics.Arcade.Group
 
     private roundShot?: RoundShot
 
@@ -124,6 +126,9 @@ export class GameScene extends Phaser.Scene {
             this.physics.add.group()
 
         this.bombShots =
+            this.physics.add.group()
+
+        this.boosterGroup =
             this.physics.add.group()
 
         this.alienGroup =
@@ -462,6 +467,14 @@ export class GameScene extends Phaser.Scene {
     // =====================================================
 
     private createCollisions() {
+
+        this.physics.add.overlap(
+            this.player,
+            this.boosterGroup,
+            (_playerObject, boosterObject) => {
+                this.collectBooster(boosterObject as Booster)
+            }
+        )
 
         // =========================================
         // PLAYER <-> ASTEROIDS
@@ -952,6 +965,11 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.player.update()
+
+        this.boosterGroup.getChildren().forEach(boosterObject => {
+            (boosterObject as Booster).update(this.player)
+        })
+
         this.roundShot?.update(delta)
 
         if (
@@ -1172,15 +1190,55 @@ export class GameScene extends Phaser.Scene {
     }
 
     private damageAlien(alien: Alien, amount: number) {
+        const dropX = alien.x
+        const dropY = alien.y
+
         if (alien.takeDamage(amount)) {
             this.addScore(SCORE_VALUES.alien[alien.getType()])
+            this.tryDropBooster(dropX, dropY)
         }
     }
 
     private damageAsteroid(asteroid: Asteroid, amount: number) {
+        const dropX = asteroid.x
+        const dropY = asteroid.y
+
         if (asteroid.takeDamage(amount)) {
             this.addScore(SCORE_VALUES.asteroid)
+            this.tryDropBooster(dropX, dropY)
         }
+    }
+
+    private tryDropBooster(x: number, y: number) {
+        if (Math.random() >= 0.25) {
+            return
+        }
+
+        const type = Phaser.Utils.Array.GetRandom(BOOSTER_TYPES)
+        this.boosterGroup.add(new Booster(this, x, y, type))
+    }
+
+    private collectBooster(booster: Booster) {
+        if (!booster.active || !this.player.active) {
+            return
+        }
+
+        switch (booster.getType()) {
+            case 'heal':
+                this.player.heal(40)
+                break
+            case 'shield':
+                this.player.activateShield(3000)
+                break
+            case 'attackSpeed':
+                this.player.activateAttackSpeedBoost()
+                break
+            case 'superShot':
+                this.player.activateSuperShotCharge(3000)
+                break
+        }
+
+        booster.destroy()
     }
 
     private addScore(points: number) {

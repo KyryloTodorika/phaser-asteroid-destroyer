@@ -3,6 +3,9 @@ import { PlayerLaser } from './PlayerLaser'
 import type { SuperShotType } from './SuperShot'
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
+    private static readonly maxHealth: number = 100
+    private static readonly baseShootCooldown: number = 200
+
     private health: number = 100
 
     // =========================================
@@ -32,7 +35,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // =========================================
 
     private canShoot: boolean = true
-    private shootCooldown: number = 200
+    private shootCooldown: number = Player.baseShootCooldown
+    private attackSpeedBoosted: boolean = false
 
     // =========================================
     // SUPERSHOT
@@ -42,12 +46,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     private canUseSuperShot: boolean = true
 
-    private superShotCooldown: number = 5000
+    private superShotCooldown: number = 8000
 
     private superShotCooldownStartedAt: number = 0
 
     private superShotCooldownTimer?:
         Phaser.Time.TimerEvent
+
+    private superShotChargeActive: boolean = false
+    private superShotChargeTimer?: Phaser.Time.TimerEvent
+
+    private shieldActive: boolean = false
+    private shieldTimer?: Phaser.Time.TimerEvent
 
     private movementDirection = new Phaser.Math.Vector2(0, -1)
 
@@ -385,7 +395,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (
             !this.active ||
             !this.superShot ||
-            !this.canUseSuperShot
+            (!this.canUseSuperShot && !this.superShotChargeActive)
         ) {
             return
         }
@@ -399,24 +409,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // START COOLDOWN
         // =========================================
 
-        this.canUseSuperShot =
-            false
-
-        this.superShotCooldownStartedAt =
-            this.scene.time.now
-
-        this.superShotCooldownTimer =
-            this.scene.time.delayedCall(
-                this.superShotCooldown,
-                () => {
-
-                    this.canUseSuperShot =
-                        true
-
-                    this.superShotCooldownStartedAt =
-                        0
-                }
-            )
+        if (!this.superShotChargeActive) {
+            this.startSuperShotCooldown()
+        }
 
         // =========================================
         // TEMPORARY ABILITY EVENT
@@ -495,7 +490,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // =====================================================
 
     isSuperShotReady(): boolean {
-        return this.canUseSuperShot
+        return this.canUseSuperShot || this.superShotChargeActive
     }
 
     // =====================================================
@@ -509,7 +504,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         number {
 
         if (
-            this.canUseSuperShot
+            this.canUseSuperShot ||
+            this.superShotChargeActive
         ) {
             return 1
         }
@@ -535,6 +531,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     ) {
         if (
             !this.active ||
+            this.shieldActive ||
             !this.canTakeDamage
         ) {
             return
@@ -573,5 +570,75 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     getHealth(): number {
         return this.health
+    }
+
+    heal(amount: number) {
+        if (!this.active) {
+            return
+        }
+
+        this.health = Math.min(
+            Player.maxHealth,
+            this.health + amount
+        )
+    }
+
+    activateAttackSpeedBoost() {
+        if (this.attackSpeedBoosted) {
+            return
+        }
+
+        this.attackSpeedBoosted = true
+        this.shootCooldown = Math.round(
+            Player.baseShootCooldown / 1.5
+        )
+    }
+
+    activateShield(duration: number = 3000) {
+        this.shieldActive = true
+        this.setTint(0x54e7ff)
+        this.shieldTimer?.remove()
+
+        this.shieldTimer = this.scene.time.delayedCall(
+            duration,
+            () => {
+                this.shieldActive = false
+                this.clearTint()
+                this.shieldTimer = undefined
+            }
+        )
+    }
+
+    activateSuperShotCharge(duration: number = 3000) {
+        this.superShotCooldownTimer?.remove()
+        this.superShotCooldownTimer = undefined
+        this.superShotCooldownStartedAt = 0
+        this.canUseSuperShot = true
+        this.superShotChargeActive = true
+        this.superShotChargeTimer?.remove()
+
+        this.superShotChargeTimer = this.scene.time.delayedCall(
+            duration,
+            () => {
+                this.superShotChargeActive = false
+                this.superShotChargeTimer = undefined
+                this.startSuperShotCooldown()
+            }
+        )
+    }
+
+    private startSuperShotCooldown() {
+        this.canUseSuperShot = false
+        this.superShotCooldownStartedAt = this.scene.time.now
+        this.superShotCooldownTimer?.remove()
+
+        this.superShotCooldownTimer = this.scene.time.delayedCall(
+            this.superShotCooldown,
+            () => {
+                this.canUseSuperShot = true
+                this.superShotCooldownStartedAt = 0
+                this.superShotCooldownTimer = undefined
+            }
+        )
     }
 }
