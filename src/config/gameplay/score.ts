@@ -1,4 +1,4 @@
-import type { AlienType } from '../entities/Alien'
+import type { AlienType } from './enemies'
 
 export const SCORE_VALUES = {
     asteroid: 50,

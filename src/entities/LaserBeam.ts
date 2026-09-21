@@ -1,13 +1,14 @@
 import Phaser from 'phaser'
 import type { Player } from './Player'
+import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
 
 export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
-    private readonly damage: number = 80
+    private readonly damage: number = SUPER_SHOT_CONFIG.laser.damage
     private readonly hitTargets = new Set<Phaser.GameObjects.GameObject>()
     private readonly player: Player
     private readonly direction = new Phaser.Math.Vector2(0, -1)
-    private readonly beamOffset: number = 340
-    private readonly activeTime: number = 1000 // in ms (1000 = 1 second)
+    private readonly beamOffset: number = SUPER_SHOT_CONFIG.laser.offsetFromPlayer
+    private readonly activeTime: number = SUPER_SHOT_CONFIG.laser.activeTimeMs
 
     constructor(
         scene: Phaser.Scene,
@@ -20,12 +21,18 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(740, 175)
+        this.setDisplaySize(
+            SUPER_SHOT_CONFIG.laser.displayWidth,
+            SUPER_SHOT_CONFIG.laser.displayHeight
+        )
         this.setDepth(20)
 
         const body = this.body as Phaser.Physics.Arcade.Body
 
-        body.setSize(940, 87)
+        body.setSize(
+            SUPER_SHOT_CONFIG.laser.hitboxLength,
+            SUPER_SHOT_CONFIG.laser.hitboxThickness
+        )
 
         this.followPlayer()
 
@@ -61,8 +68,10 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
         const sine = Math.abs(this.direction.y)
 
         body.setSize(
-            940 * cosine + 87 * sine,
-            940 * sine + 87 * cosine
+            SUPER_SHOT_CONFIG.laser.hitboxLength * cosine +
+                SUPER_SHOT_CONFIG.laser.hitboxThickness * sine,
+            SUPER_SHOT_CONFIG.laser.hitboxLength * sine +
+                SUPER_SHOT_CONFIG.laser.hitboxThickness * cosine
         )
         body.updateFromGameObject()
     }

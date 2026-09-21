@@ -1,13 +1,14 @@
 import Phaser from 'phaser'
 import type { Player } from './Player'
 import { PlayerLaser } from './PlayerLaser'
+import { PLAYER_PROJECTILE_CONFIG, SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
 
 export class RoundShot {
-    private static readonly duration: number = 3000
-    private static readonly interval: number = 250
-    private static readonly projectileCount: number = 12
+    private static readonly duration: number = SUPER_SHOT_CONFIG.round.durationMs
+    private static readonly interval: number = SUPER_SHOT_CONFIG.round.intervalMs
+    private static readonly projectileCount: number = SUPER_SHOT_CONFIG.round.projectileCount
     private static readonly rotationSpeed: number =
-        Phaser.Math.DegToRad(600)
+        Phaser.Math.DegToRad(SUPER_SHOT_CONFIG.round.rotationDegreesPerSecond)
 
     private readonly scene: Phaser.Scene
     private readonly player: Player
@@ -109,8 +110,8 @@ export class RoundShot {
 
             const shot = new PlayerLaser(
                 this.scene,
-                this.player.x + direction.x * 55,
-                this.player.y + direction.y * 55,
+                this.player.x + direction.x * SUPER_SHOT_CONFIG.round.projectileSpawnOffset,
+                this.player.y + direction.y * SUPER_SHOT_CONFIG.round.projectileSpawnOffset,
                 angle + Math.PI / 2
             )
 
@@ -120,7 +121,7 @@ export class RoundShot {
                 direction.y * PlayerLaser.speed
             )
 
-            this.scene.time.delayedCall(2500, () => {
+            this.scene.time.delayedCall(PLAYER_PROJECTILE_CONFIG.lifetimeMs, () => {
                 if (shot.active) {
                     shot.destroy()
                 }

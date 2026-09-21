@@ -1,10 +1,9 @@
 import Phaser from 'phaser'
 
 import { Alien } from '../entities/Alien'
-import type { AlienType } from '../entities/Alien'
 import { Asteroid } from '../entities/Asteroid'
 import { Boss } from '../entities/Boss'
-import { Booster, BOOSTER_TYPES } from '../entities/Booster'
+import { Booster } from '../entities/Booster'
 import { EnemyLaser } from '../entities/EnemyLaser'
 import { ExplosionShot } from '../entities/ExplosionShot'
 import { LaserBeam } from '../entities/LaserBeam'
@@ -12,7 +11,16 @@ import { Player } from '../entities/Player'
 import { PlayerLaser } from '../entities/PlayerLaser'
 import { RoundShot } from '../entities/RoundShot'
 import type { SuperShotType } from '../entities/SuperShot'
-import { SCORE_VALUES } from '../config/score'
+import { BOOSTER_CONFIG, BOOSTER_TYPES } from '../config/gameplay/boosters'
+import {
+    ALIEN_CONFIG,
+    BOSS_CONFIG,
+    ENEMY_PROJECTILE_CONFIG
+} from '../config/gameplay/enemies'
+import type { AlienType } from '../config/gameplay/enemies'
+import { ASTEROID_CONFIG, SPAWN_AREA_CONFIG } from '../config/gameplay/obstacles'
+import { SCORE_VALUES } from '../config/gameplay/score'
+import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
 import { BossHealthBar } from '../ui/BossHealthBar'
 import { GameUI } from '../ui/GameUI'
 import { createActionButton, titleStyle } from '../ui/theme'
@@ -146,7 +154,11 @@ export class BossScene extends Phaser.Scene {
 
         this.aliens.forEach(alien => {
             if (alien.active && alien.update(this.player, time)) {
-                this.fireEnemyLaser(alien, 35)
+                this.fireEnemyLaser(
+                    alien,
+                    ALIEN_CONFIG.shooter.projectileSpawnOffset,
+                    ALIEN_CONFIG.shooter.projectileDamage
+                )
             }
         })
 
@@ -183,7 +195,15 @@ export class BossScene extends Phaser.Scene {
     }
 
     private createCollisions() {
-        this.physics.add.collider(this.player, this.boss)
+        this.physics.add.collider(
+            this.player,
+            this.boss,
+            () => {
+                if (this.player.active && !this.fightComplete) {
+                    this.player.takeDamage(BOSS_CONFIG.contactDamage)
+                }
+            }
+        )
         this.physics.add.overlap(
             this.player,
             this.boosterGroup,
@@ -196,16 +216,18 @@ export class BossScene extends Phaser.Scene {
             this.asteroidGroup,
             () => {
                 if (this.player.active && !this.fightComplete) {
-                    this.player.takeDamage(10)
+                    this.player.takeDamage(ASTEROID_CONFIG.contactDamage)
                 }
             }
         )
         this.physics.add.collider(
             this.player,
             this.alienGroup,
-            () => {
+            (_playerObject, alienObject) => {
                 if (this.player.active && !this.fightComplete) {
-                    this.player.takeDamage(20)
+                    this.player.takeDamage(
+                        ALIEN_CONFIG[(alienObject as Alien).getType()].contactDamage
+                    )
                 }
             }
         )
@@ -371,37 +393,40 @@ export class BossScene extends Phaser.Scene {
         this.updateSpawnPattern(
             'asteroid',
             healthRatio,
-            0.9,
-            3000,
+            BOSS_CONFIG.spawnPatterns.asteroid.unlockHealthRatio,
+            BOSS_CONFIG.spawnPatterns.asteroid.intervalMs,
             time,
             () => this.spawnAsteroid()
         )
         this.updateSpawnPattern(
             'fast',
             healthRatio,
-            0.75,
-            4500,
+            BOSS_CONFIG.spawnPatterns.fast.unlockHealthRatio,
+            BOSS_CONFIG.spawnPatterns.fast.intervalMs,
             time,
             () => this.spawnAlien('fast')
         )
         this.updateSpawnPattern(
             'fat',
             healthRatio,
-            0.65,
-            6000,
+            BOSS_CONFIG.spawnPatterns.fat.unlockHealthRatio,
+            BOSS_CONFIG.spawnPatterns.fat.intervalMs,
             time,
             () => this.spawnAlien('fat')
         )
         this.updateSpawnPattern(
             'shooter',
             healthRatio,
-            0.5,
-            5000,
+            BOSS_CONFIG.spawnPatterns.shooter.unlockHealthRatio,
+            BOSS_CONFIG.spawnPatterns.shooter.intervalMs,
             time,
             () => this.spawnAlien('shooter')
         )
 
-        if (healthRatio < 0.25 && !this.finalMovementStarted) {
+        if (
+            healthRatio < BOSS_CONFIG.finalMovementHealthRatio &&
+            !this.finalMovementStarted
+        ) {
             this.finalMovementStarted = true
             this.boss.startArenaMovement()
         }
@@ -434,16 +459,23 @@ export class BossScene extends Phaser.Scene {
 
     private spawnAsteroid() {
         const position = this.getSpawnPosition()
-        const texture = `asteroid_${Phaser.Math.Between(1, 4)}`
+        const texture = `asteroid_${Phaser.Math.Between(
+            1,
+            ASTEROID_CONFIG.textureCount
+        )}`
         const asteroid = new Asteroid(
             this,
             position.x,
             position.y,
             texture,
-            150
+            ASTEROID_CONFIG.speed,
+            ASTEROID_CONFIG.health
         )
 
-        const size = Phaser.Math.Between(80, 140)
+        const size = Phaser.Math.Between(
+            ASTEROID_CONFIG.minDisplaySize,
+            ASTEROID_CONFIG.maxDisplaySize
+        )
         asteroid.setDisplaySize(size, size)
         this.asteroidGroup.add(asteroid)
         asteroid.startMovement()
@@ -460,10 +492,20 @@ export class BossScene extends Phaser.Scene {
     private getSpawnPosition(): Phaser.Math.Vector2 {
         const position = new Phaser.Math.Vector2()
 
-        for (let attempt = 0; attempt < 30; attempt++) {
+        for (
+            let attempt = 0;
+            attempt < BOSS_CONFIG.spawnPositionAttempts;
+            attempt++
+        ) {
             position.set(
-                Phaser.Math.Between(100, 1180),
-                Phaser.Math.Between(100, 620)
+                Phaser.Math.Between(
+                    SPAWN_AREA_CONFIG.minX,
+                    SPAWN_AREA_CONFIG.maxX
+                ),
+                Phaser.Math.Between(
+                    SPAWN_AREA_CONFIG.minY,
+                    SPAWN_AREA_CONFIG.maxY
+                )
             )
 
             const farFromPlayer = Phaser.Math.Distance.Between(
@@ -471,13 +513,13 @@ export class BossScene extends Phaser.Scene {
                 position.y,
                 this.player.x,
                 this.player.y
-            ) >= 250
+            ) >= BOSS_CONFIG.minSpawnDistanceFromPlayer
             const farFromBoss = Phaser.Math.Distance.Between(
                 position.x,
                 position.y,
                 this.boss.x,
                 this.boss.y
-            ) >= 220
+            ) >= BOSS_CONFIG.minSpawnDistanceFromBoss
 
             if (farFromPlayer && farFromBoss) {
                 break
@@ -488,12 +530,17 @@ export class BossScene extends Phaser.Scene {
     }
 
     private fireBossLaser() {
-        this.fireEnemyLaser(this.boss, 150)
+        this.fireEnemyLaser(
+            this.boss,
+            BOSS_CONFIG.projectileSpawnOffset,
+            BOSS_CONFIG.projectileDamage
+        )
     }
 
     private fireEnemyLaser(
         shooter: Phaser.Physics.Arcade.Sprite,
-        offset: number
+        offset: number,
+        damage: number
     ) {
         const direction = new Phaser.Math.Vector2(
             this.player.x - shooter.x,
@@ -515,11 +562,15 @@ export class BossScene extends Phaser.Scene {
                 0,
                 direction.x,
                 direction.y
-            ) + Math.PI / 2
+            ) + Math.PI / 2,
+            damage
         )
 
         this.enemyLasers.add(laser)
-        laser.setVelocity(direction.x * 350, direction.y * 350)
+        laser.setVelocity(
+            direction.x * ENEMY_PROJECTILE_CONFIG.speed,
+            direction.y * ENEMY_PROJECTILE_CONFIG.speed
+        )
     }
 
     private fireSuperShot(
@@ -551,8 +602,8 @@ export class BossScene extends Phaser.Scene {
 
         const shot = new ExplosionShot(
             this,
-            this.player.x + direction.x * 55,
-            this.player.y + direction.y * 55,
+            this.player.x + direction.x * SUPER_SHOT_CONFIG.commonSpawnOffset,
+            this.player.y + direction.y * SUPER_SHOT_CONFIG.commonSpawnOffset,
             direction
         )
 
@@ -681,7 +732,7 @@ export class BossScene extends Phaser.Scene {
     }
 
     private tryDropBooster(x: number, y: number) {
-        if (Math.random() >= 0.25) {
+        if (Math.random() >= BOOSTER_CONFIG.dropChance) {
             return
         }
 
@@ -696,16 +747,18 @@ export class BossScene extends Phaser.Scene {
 
         switch (booster.getType()) {
             case 'heal':
-                this.player.heal(40)
+                this.player.heal(BOOSTER_CONFIG.effects.healAmount)
                 break
             case 'shield':
-                this.player.activateShield(3000)
+                this.player.activateShield(BOOSTER_CONFIG.effects.shieldDurationMs)
                 break
             case 'attackSpeed':
                 this.player.activateAttackSpeedBoost()
                 break
             case 'superShot':
-                this.player.activateSuperShotCharge(3000)
+                this.player.activateSuperShotCharge(
+                    BOOSTER_CONFIG.effects.superShotChargeDurationMs
+                )
                 break
         }
 

@@ -1,9 +1,10 @@
 import Phaser from 'phaser'
+import { PLAYER_PROJECTILE_CONFIG } from '../config/gameplay/weapons'
 
 export class PlayerLaser extends Phaser.Physics.Arcade.Sprite {
-    static readonly speed: number = 600
+    static readonly speed: number = PLAYER_PROJECTILE_CONFIG.speed
 
-    private readonly damage: number = 10
+    private readonly damage: number = PLAYER_PROJECTILE_CONFIG.damage
 
     constructor(
         scene: Phaser.Scene,
@@ -16,7 +17,10 @@ export class PlayerLaser extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(8, 20)
+        this.setDisplaySize(
+            PLAYER_PROJECTILE_CONFIG.displayWidth,
+            PLAYER_PROJECTILE_CONFIG.displayHeight
+        )
         this.setRotation(rotation)
 
         const body = this.body as Phaser.Physics.Arcade.Body

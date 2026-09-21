@@ -4,18 +4,26 @@ import { Player } from '../entities/Player'
 import { PlayerLaser } from '../entities/PlayerLaser'
 import { Asteroid } from '../entities/Asteroid'
 import { Alien } from '../entities/Alien'
-import type { AlienType } from '../entities/Alien'
 import { EnemyLaser } from '../entities/EnemyLaser'
 import { BlackHole } from '../entities/BlackHole'
 import { LaserBeam } from '../entities/LaserBeam'
 import { ExplosionShot } from '../entities/ExplosionShot'
 import { RoundShot } from '../entities/RoundShot'
 import type { SuperShotType } from '../entities/SuperShot'
-import { Booster, BOOSTER_TYPES } from '../entities/Booster'
-import { SCORE_VALUES } from '../config/score'
+import { Booster } from '../entities/Booster'
+import { BOOSTER_CONFIG, BOOSTER_TYPES } from '../config/gameplay/boosters'
+import {
+    ALIEN_CONFIG,
+    ALIEN_SPAWN_CONFIG,
+    ENEMY_PROJECTILE_CONFIG
+} from '../config/gameplay/enemies'
+import type { AlienType } from '../config/gameplay/enemies'
+import { ASTEROID_CONFIG, BLACK_HOLE_CONFIG, SPAWN_AREA_CONFIG } from '../config/gameplay/obstacles'
+import { SCORE_VALUES } from '../config/gameplay/score'
+import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
 
 import { WaveManager } from '../systems/WaveManager'
-import type { WaveConfig } from '../data/waves'
+import type { WaveConfig } from '../config/gameplay/waves'
 import { GameUI } from '../ui/GameUI'
 
 export class GameScene extends Phaser.Scene {
@@ -306,12 +314,10 @@ export class GameScene extends Phaser.Scene {
 
     private createAsteroid() {
 
-        const asteroidTypes = [
-            'asteroid_1',
-            'asteroid_2',
-            'asteroid_3',
-            'asteroid_4'
-        ]
+        const asteroidTypes = Array.from(
+            { length: ASTEROID_CONFIG.textureCount },
+            (_value, index) => `asteroid_${index + 1}`
+        )
 
         const texture =
             Phaser.Utils.Array.GetRandom(
@@ -320,8 +326,8 @@ export class GameScene extends Phaser.Scene {
 
         const size =
             Phaser.Math.Between(
-                80,
-                140
+                ASTEROID_CONFIG.minDisplaySize,
+                ASTEROID_CONFIG.maxDisplaySize
             )
 
         let x: number
@@ -329,13 +335,13 @@ export class GameScene extends Phaser.Scene {
 
         do {
             x = Phaser.Math.Between(
-                100,
-                1180
+                SPAWN_AREA_CONFIG.minX,
+                SPAWN_AREA_CONFIG.maxX
             )
 
             y = Phaser.Math.Between(
-                100,
-                620
+                SPAWN_AREA_CONFIG.minY,
+                SPAWN_AREA_CONFIG.maxY
             )
 
         } while (
@@ -344,7 +350,7 @@ export class GameScene extends Phaser.Scene {
                 y,
                 this.player.x,
                 this.player.y
-            ) < 180
+            ) < ASTEROID_CONFIG.minSpawnDistanceFromPlayer
         )
 
         // =========================================
@@ -357,7 +363,8 @@ export class GameScene extends Phaser.Scene {
                 x,
                 y,
                 texture,
-                150
+                ASTEROID_CONFIG.speed,
+                ASTEROID_CONFIG.health
             )
 
         asteroid.setDisplaySize(
@@ -399,14 +406,14 @@ export class GameScene extends Phaser.Scene {
 
             x =
                 Phaser.Math.Between(
-                    100,
-                    1180
+                    SPAWN_AREA_CONFIG.minX,
+                    SPAWN_AREA_CONFIG.maxX
                 )
 
             y =
                 Phaser.Math.Between(
-                    100,
-                    620
+                    SPAWN_AREA_CONFIG.minY,
+                    SPAWN_AREA_CONFIG.maxY
                 )
 
         } while (
@@ -415,7 +422,7 @@ export class GameScene extends Phaser.Scene {
                 y,
                 this.player.x,
                 this.player.y
-            ) < 250
+            ) < ALIEN_SPAWN_CONFIG.minDistanceFromPlayer
         )
 
         // =========================================
@@ -452,10 +459,17 @@ export class GameScene extends Phaser.Scene {
         let y: number
 
         do {
-            x = Phaser.Math.Between(140, 1140)
-            y = Phaser.Math.Between(140, 580)
+            x = Phaser.Math.Between(
+                SPAWN_AREA_CONFIG.blackHoleMinX,
+                SPAWN_AREA_CONFIG.blackHoleMaxX
+            )
+            y = Phaser.Math.Between(
+                SPAWN_AREA_CONFIG.blackHoleMinY,
+                SPAWN_AREA_CONFIG.blackHoleMaxY
+            )
         } while (
-            Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) < 250
+            Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) <
+                BLACK_HOLE_CONFIG.minSpawnDistanceFromPlayer
         )
 
         const blackHole = new BlackHole(this, x, y)
@@ -493,7 +507,7 @@ export class GameScene extends Phaser.Scene {
                 }
 
                 this.player.takeDamage(
-                    10
+                    ASTEROID_CONFIG.contactDamage
                 )
             }
         )
@@ -505,7 +519,7 @@ export class GameScene extends Phaser.Scene {
         this.physics.add.collider(
             this.player,
             this.alienGroup,
-            () => {
+            (_playerObject, alienObject) => {
 
                 if (
                     !this.player.active ||
@@ -515,7 +529,7 @@ export class GameScene extends Phaser.Scene {
                 }
 
                 this.player.takeDamage(
-                    20
+                    ALIEN_CONFIG[(alienObject as Alien).getType()].contactDamage
                 )
             }
         )
@@ -540,7 +554,7 @@ export class GameScene extends Phaser.Scene {
                     alienObject as Alien
 
                 if (alien.active) {
-                    this.damageAlien(alien, 10)
+                    this.damageAlien(alien, ASTEROID_CONFIG.damageToAliens)
                 }
             }
         )
@@ -566,7 +580,7 @@ export class GameScene extends Phaser.Scene {
                     return
                 }
 
-                this.player.takeDamage(30)
+                this.player.takeDamage(BLACK_HOLE_CONFIG.contactDamage)
             }
         )
 
@@ -1063,8 +1077,8 @@ export class GameScene extends Phaser.Scene {
 
         const shot = new ExplosionShot(
             this,
-            this.player.x + direction.x * 55,
-            this.player.y + direction.y * 55,
+            this.player.x + direction.x * SUPER_SHOT_CONFIG.commonSpawnOffset,
+            this.player.y + direction.y * SUPER_SHOT_CONFIG.commonSpawnOffset,
             direction
         )
 
@@ -1195,7 +1209,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     private tryDropBooster(x: number, y: number) {
-        if (Math.random() >= 0.25) {
+        if (Math.random() >= BOOSTER_CONFIG.dropChance) {
             return
         }
 
@@ -1210,16 +1224,18 @@ export class GameScene extends Phaser.Scene {
 
         switch (booster.getType()) {
             case 'heal':
-                this.player.heal(40)
+                this.player.heal(BOOSTER_CONFIG.effects.healAmount)
                 break
             case 'shield':
-                this.player.activateShield(3000)
+                this.player.activateShield(BOOSTER_CONFIG.effects.shieldDurationMs)
                 break
             case 'attackSpeed':
                 this.player.activateAttackSpeedBoost()
                 break
             case 'superShot':
-                this.player.activateSuperShotCharge(3000)
+                this.player.activateSuperShotCharge(
+                    BOOSTER_CONFIG.effects.superShotChargeDurationMs
+                )
                 break
         }
 
@@ -1239,12 +1255,16 @@ export class GameScene extends Phaser.Scene {
 
         const laser = new EnemyLaser(
             this,
-            alien.x + direction.x * 35,
-            alien.y + direction.y * 35,
-            Phaser.Math.Angle.Between(0, 0, direction.x, direction.y) + Math.PI / 2
+            alien.x + direction.x * ALIEN_CONFIG.shooter.projectileSpawnOffset,
+            alien.y + direction.y * ALIEN_CONFIG.shooter.projectileSpawnOffset,
+            Phaser.Math.Angle.Between(0, 0, direction.x, direction.y) + Math.PI / 2,
+            ALIEN_CONFIG.shooter.projectileDamage
         )
 
         this.enemyLasers.add(laser)
-        laser.setVelocity(direction.x * 350, direction.y * 350)
+        laser.setVelocity(
+            direction.x * ENEMY_PROJECTILE_CONFIG.speed,
+            direction.y * ENEMY_PROJECTILE_CONFIG.speed
+        )
     }
 }

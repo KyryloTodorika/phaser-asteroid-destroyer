@@ -1,26 +1,25 @@
 import Phaser from 'phaser'
 import { PlayerLaser } from './PlayerLaser'
 import type { SuperShotType } from './SuperShot'
+import { BOOSTER_CONFIG } from '../config/gameplay/boosters'
+import { PLAYER_CONFIG } from '../config/gameplay/player'
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-    private static readonly maxHealth: number = 100
-    private static readonly baseShootCooldown: number = 200
-
-    private health: number = 100
+    private health: number = PLAYER_CONFIG.maxHealth
 
     // =========================================
     // MOVEMENT
     // =========================================
 
-    private acceleration: number = 1000
-    private maxSpeed: number = 400
-    private drag: number = 700
+    private acceleration: number = PLAYER_CONFIG.movement.acceleration
+    private maxSpeed: number = PLAYER_CONFIG.movement.maxSpeed
+    private drag: number = PLAYER_CONFIG.movement.drag
 
     // =========================================
     // ROTATION
     // =========================================
 
-    private rotationSpeed: number = 0.06
+    private rotationSpeed: number = PLAYER_CONFIG.movement.rotationSpeed
     private rotationLocked: boolean = false
 
     // =========================================
@@ -28,14 +27,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // =========================================
 
     private canTakeDamage: boolean = true
-    private damageCooldown: number = 500
+    private damageCooldown: number = PLAYER_CONFIG.damageInvulnerabilityMs
 
     // =========================================
     // NORMAL SHOOTING
     // =========================================
 
     private canShoot: boolean = true
-    private shootCooldown: number = Player.baseShootCooldown
+    private shootCooldown: number = PLAYER_CONFIG.shooting.cooldownMs
     private attackSpeedBoosted: boolean = false
 
     // =========================================
@@ -46,7 +45,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     private canUseSuperShot: boolean = true
 
-    private superShotCooldown: number = 8000
+    private superShotCooldown: number = PLAYER_CONFIG.superShotCooldownMs
 
     private superShotCooldownStartedAt: number = 0
 
@@ -105,14 +104,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // =========================================
 
         this.setDisplaySize(
-            96,
-            96
+            PLAYER_CONFIG.display.width,
+            PLAYER_CONFIG.display.height
         )
 
         // Player hitbox
         this.body?.setSize(
-            48,
-            108
+            PLAYER_CONFIG.display.hitboxWidth,
+            PLAYER_CONFIG.display.hitboxHeight
         )
 
         // =========================================
@@ -250,7 +249,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (
             !this.rotationLocked &&
             velocity &&
-            velocity.length() > 5
+            velocity.length() > PLAYER_CONFIG.movement.rotationVelocityThreshold
         ) {
             const targetRotation =
                 Phaser.Math.Angle.Between(
@@ -319,7 +318,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // LASER START POSITION
         // =========================================
 
-        const offset = 10
+        const offset = PLAYER_CONFIG.shooting.projectileSpawnOffset
 
         const laserX =
             this.x +
@@ -578,7 +577,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         this.health = Math.min(
-            Player.maxHealth,
+            PLAYER_CONFIG.maxHealth,
             this.health + amount
         )
     }
@@ -590,11 +589,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.attackSpeedBoosted = true
         this.shootCooldown = Math.round(
-            Player.baseShootCooldown / 1.5
+            PLAYER_CONFIG.shooting.cooldownMs /
+                BOOSTER_CONFIG.effects.attackSpeedMultiplier
         )
     }
 
-    activateShield(duration: number = 3000) {
+    activateShield(duration: number = BOOSTER_CONFIG.effects.shieldDurationMs) {
         this.shieldActive = true
         this.setTint(0x54e7ff)
         this.shieldTimer?.remove()
@@ -609,7 +609,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         )
     }
 
-    activateSuperShotCharge(duration: number = 3000) {
+    activateSuperShotCharge(
+        duration: number = BOOSTER_CONFIG.effects.superShotChargeDurationMs
+    ) {
         this.superShotCooldownTimer?.remove()
         this.superShotCooldownTimer = undefined
         this.superShotCooldownStartedAt = 0
@@ -629,7 +631,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     resetBoosterEffects() {
         this.attackSpeedBoosted = false
-        this.shootCooldown = Player.baseShootCooldown
+        this.shootCooldown = PLAYER_CONFIG.shooting.cooldownMs
         this.canShoot = true
 
         this.shieldTimer?.remove()

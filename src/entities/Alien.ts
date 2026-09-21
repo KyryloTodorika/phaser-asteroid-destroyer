@@ -1,13 +1,8 @@
 import Phaser from 'phaser'
+import { ALIEN_CONFIG } from '../config/gameplay/enemies'
+import type { AlienType } from '../config/gameplay/enemies'
 
-export type AlienType = 'standard' | 'fast' | 'fat' | 'shooter'
-
-const ALIEN_STATS: Record<AlienType, { speed: number; health: number }> = {
-    standard: { speed: 70, health: 30 },
-    fast: { speed: 150, health: 20 },
-    fat: { speed: 45, health: 100 },
-    shooter: { speed: 80, health: 20 }
-}
+export type { AlienType } from '../config/gameplay/enemies'
 
 export class Alien extends Phaser.Physics.Arcade.Sprite {
     private speed: number
@@ -27,10 +22,11 @@ export class Alien extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this)
 
         this.alienType = type
-        this.speed = ALIEN_STATS[type].speed
-        this.health = ALIEN_STATS[type].health
+        const config = ALIEN_CONFIG[type]
+        this.speed = config.speed
+        this.health = config.health
 
-        this.setDisplaySize(type === 'fat' ? 110 : 80, type === 'fat' ? 80 : 80)
+        this.setDisplaySize(config.displayWidth, config.displayHeight)
 
         this.setCollideWorldBounds(true)
     }
@@ -52,14 +48,17 @@ export class Alien extends Phaser.Physics.Arcade.Sprite {
         }
 
         if (this.alienType === 'shooter') {
-            const movement = distance < 280 ? -1 : distance > 420 ? 1 : 0
+            const config = ALIEN_CONFIG.shooter
+            const movement = distance < config.preferredDistanceMin
+                ? -1
+                : distance > config.preferredDistanceMax ? 1 : 0
 
             this.setVelocity(
                 direction.x * this.speed * movement,
                 direction.y * this.speed * movement
             )
 
-            if (time - this.lastShotAt >= 1400) {
+            if (time - this.lastShotAt >= config.shootCooldownMs) {
                 this.lastShotAt = time
                 return true
             }

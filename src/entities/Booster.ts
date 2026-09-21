@@ -1,29 +1,11 @@
 import Phaser from 'phaser'
 import type { Player } from './Player'
+import { BOOSTER_CONFIG } from '../config/gameplay/boosters'
+import type { BoosterType } from '../config/gameplay/boosters'
 
-export type BoosterType =
-    | 'heal'
-    | 'shield'
-    | 'attackSpeed'
-    | 'superShot'
-
-export const BOOSTER_TYPES: BoosterType[] = [
-    'heal',
-    'shield',
-    'attackSpeed',
-    'superShot'
-]
-
-const BOOSTER_TEXTURES: Record<BoosterType, string> = {
-    heal: 'booster_heal',
-    shield: 'booster_shield',
-    attackSpeed: 'booster_attack_speed',
-    superShot: 'booster_super_shot'
-}
+export type { BoosterType } from '../config/gameplay/boosters'
 
 export class Booster extends Phaser.Physics.Arcade.Sprite {
-    static readonly followSpeed: number = 180
-
     private readonly boosterType: BoosterType
 
     constructor(
@@ -32,19 +14,19 @@ export class Booster extends Phaser.Physics.Arcade.Sprite {
         y: number,
         type: BoosterType
     ) {
-        super(scene, x, y, BOOSTER_TEXTURES[type])
+        super(scene, x, y, BOOSTER_CONFIG.textures[type])
 
         this.boosterType = type
 
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(52, 52)
+        this.setDisplaySize(BOOSTER_CONFIG.displaySize, BOOSTER_CONFIG.displaySize)
         this.setDepth(15)
 
         const body = this.body as Phaser.Physics.Arcade.Body
         body.setAllowGravity(false)
-        body.setCircle(this.width * 0.4)
+        body.setCircle(this.width * BOOSTER_CONFIG.hitboxRadiusScale)
     }
 
     update(player: Player) {
@@ -65,8 +47,8 @@ export class Booster extends Phaser.Physics.Arcade.Sprite {
 
         direction.normalize()
         this.setVelocity(
-            direction.x * Booster.followSpeed,
-            direction.y * Booster.followSpeed
+            direction.x * BOOSTER_CONFIG.followSpeed,
+            direction.y * BOOSTER_CONFIG.followSpeed
         )
     }
 

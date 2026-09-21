@@ -1,10 +1,8 @@
 import Phaser from 'phaser'
+import { BOSS_CONFIG } from '../config/gameplay/enemies'
 
 export class Boss extends Phaser.Physics.Arcade.Sprite {
-    static readonly maxHealth: number = 1500
-    static readonly shootCooldown: number = 1000
-    static readonly movementSpeed: number = 100
-    static readonly finalMovementSpeed: number = 200
+    static readonly maxHealth: number = BOSS_CONFIG.maxHealth
 
     private health: number = Boss.maxHealth
     private lastShotAt: number = 0
@@ -19,17 +17,17 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(340, 340)
+        this.setDisplaySize(BOSS_CONFIG.displaySize, BOSS_CONFIG.displaySize)
         this.setRotation(-Math.PI / 2)
         this.setImmovable(true)
         this.setCollideWorldBounds(true)
         this.setBounce(1)
-        this.setVelocityY(Boss.movementSpeed)
+        this.setVelocityY(BOSS_CONFIG.movementSpeed)
         this.setDepth(10)
 
         const body = this.body as Phaser.Physics.Arcade.Body
         body.setAllowGravity(false)
-        body.setSize(1000, 1000)
+        body.setSize(BOSS_CONFIG.hitboxSize, BOSS_CONFIG.hitboxSize)
     }
 
     update(player: Phaser.Physics.Arcade.Sprite, time: number): boolean {
@@ -37,7 +35,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
             return false
         }
 
-        if (time - this.lastShotAt < Boss.shootCooldown) {
+        if (time - this.lastShotAt < BOSS_CONFIG.shootCooldownMs) {
             return false
         }
 
@@ -48,7 +46,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
     startArenaMovement() {
         const direction = new Phaser.Math.Vector2(1, 1)
             .normalize()
-            .scale(Boss.finalMovementSpeed)
+            .scale(BOSS_CONFIG.finalMovementSpeed)
 
         this.setVelocity(direction.x, direction.y)
     }

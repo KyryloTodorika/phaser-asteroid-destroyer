@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { ASTEROID_CONFIG } from '../config/gameplay/obstacles'
 
 export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     private speed: number
@@ -9,8 +10,8 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
         x: number,
         y: number,
         texture: string,
-        speed: number = 100,
-        health: number = 30
+        speed: number = ASTEROID_CONFIG.speed,
+        health: number = ASTEROID_CONFIG.health
     ) {
         super(scene, x, y, texture)
 
@@ -45,7 +46,7 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
         // =========================================
 
         body.setCircle(
-            this.width * 0.4
+            this.width * ASTEROID_CONFIG.hitboxRadiusScale
         )
 
         // =========================================
@@ -82,8 +83,8 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
 
         body.setAngularVelocity(
             Phaser.Math.Between(
-                -40,
-                40
+                ASTEROID_CONFIG.minAngularVelocity,
+                ASTEROID_CONFIG.maxAngularVelocity
             )
         )
     }

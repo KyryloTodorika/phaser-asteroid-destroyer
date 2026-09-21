@@ -1,5 +1,5 @@
-import { WAVE_CONFIGS } from '../data/waves'
-import type { WaveConfig } from '../data/waves'
+import { WAVE_CONFIGS } from '../config/gameplay/waves'
+import type { WaveConfig } from '../config/gameplay/waves'
 
 export class WaveManager {
 

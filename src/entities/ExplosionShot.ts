@@ -1,10 +1,10 @@
 import Phaser from 'phaser'
-import { PlayerLaser } from './PlayerLaser'
+import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
 
 export class ExplosionShot extends Phaser.Physics.Arcade.Sprite {
-    static readonly speed: number = PlayerLaser.speed
-    static readonly blastRadius: number = 180
-    static readonly blastDamage: number = 70
+    static readonly speed: number = SUPER_SHOT_CONFIG.explosion.speed
+    static readonly blastRadius: number = SUPER_SHOT_CONFIG.explosion.blastRadius
+    static readonly blastDamage: number = SUPER_SHOT_CONFIG.explosion.damage
 
     private detonated: boolean = false
 
@@ -19,15 +19,21 @@ export class ExplosionShot extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(120, 43)
+        this.setDisplaySize(
+            SUPER_SHOT_CONFIG.explosion.displayWidth,
+            SUPER_SHOT_CONFIG.explosion.displayHeight
+        )
         this.setRotation(direction.angle())
         this.setDepth(20)
 
         const body = this.body as Phaser.Physics.Arcade.Body
 
-        body.setSize(360, 110)
+        body.setSize(
+            SUPER_SHOT_CONFIG.explosion.hitboxWidth,
+            SUPER_SHOT_CONFIG.explosion.hitboxHeight
+        )
 
-        scene.time.delayedCall(2500, () => {
+        scene.time.delayedCall(SUPER_SHOT_CONFIG.explosion.lifetimeMs, () => {
             if (this.active) {
                 this.destroy()
             }
