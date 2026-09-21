@@ -1,5 +1,11 @@
 import Phaser from 'phaser'
-import { IMAGE_ASSETS } from '../config/assets'
+import { AUDIO_ASSETS, IMAGE_ASSETS } from '../config/assets'
+import {
+    BACKGROUND_MUSIC_CONFIG,
+    DESTRUCTION_SFX_CONFIG,
+    LASER_BEAM_SFX_CONFIG,
+    PLAYER_SHOOT_SFX_CONFIG
+} from '../config/gameplay/audio'
 import {
     PLAYER_COAST_ANIMATION,
     PLAYER_CONFIG,
@@ -16,6 +22,23 @@ export class BootScene extends Phaser.Scene {
     }
 
     preload() {
+        this.load.audio(
+            BACKGROUND_MUSIC_CONFIG.key,
+            AUDIO_ASSETS.backgroundMusic
+        )
+        this.load.audio(
+            PLAYER_SHOOT_SFX_CONFIG.key,
+            AUDIO_ASSETS.soundEffects.playerShoot
+        )
+        this.load.audio(
+            DESTRUCTION_SFX_CONFIG.key,
+            AUDIO_ASSETS.soundEffects.destruction
+        )
+        this.load.audio(
+            LASER_BEAM_SFX_CONFIG.key,
+            AUDIO_ASSETS.soundEffects.laserBeam
+        )
+
         this.load.image('background', IMAGE_ASSETS.background)
         this.load.image('boss_background', IMAGE_ASSETS.bossBackground)
         this.load.spritesheet('player', IMAGE_ASSETS.player, {
@@ -79,9 +102,23 @@ export class BootScene extends Phaser.Scene {
             'boss_destruction',
             IMAGE_ASSETS.destructionEffects.boss
         )
+        this.load.image(
+            'player_destruction',
+            IMAGE_ASSETS.destructionEffects.player
+        )
     }
 
     create() {
+        const backgroundMusic = this.sound.get(BACKGROUND_MUSIC_CONFIG.key)
+            ?? this.sound.add(BACKGROUND_MUSIC_CONFIG.key, {
+                loop: BACKGROUND_MUSIC_CONFIG.loop,
+                volume: BACKGROUND_MUSIC_CONFIG.volume
+            })
+
+        if (!backgroundMusic.isPlaying) {
+            backgroundMusic.play()
+        }
+
         this.anims.create({
             key: PLAYER_THRUST_ANIMATION,
             frames: this.anims.generateFrameNumbers('player', {

@@ -21,6 +21,7 @@ import type { AlienType } from '../config/gameplay/enemies'
 import { ASTEROID_CONFIG } from '../config/gameplay/obstacles'
 import { SCORE_VALUES } from '../config/gameplay/score'
 import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
+import { OUTCOME_CONFIG } from '../config/gameplay/outcomes'
 import { BossHealthBar } from '../ui/BossHealthBar'
 import { GameUI } from '../ui/GameUI'
 import { createActionButton, titleStyle } from '../ui/theme'
@@ -59,6 +60,7 @@ export class BossScene extends Phaser.Scene {
     private roundShot?: RoundShot
     private selectedSuperShot?: SuperShotType
     private fightComplete: boolean = false
+    private gameOverStarted: boolean = false
 
     constructor() {
         super('BossScene')
@@ -71,6 +73,7 @@ export class BossScene extends Phaser.Scene {
 
     create() {
         this.fightComplete = false
+        this.gameOverStarted = false
         this.roundShot = undefined
         this.aliens = []
         this.unlockedSpawnPatterns.clear()
@@ -139,10 +142,7 @@ export class BossScene extends Phaser.Scene {
         }
 
         if (!this.player.active) {
-            this.scene.start('GameOverScene', {
-                wave: 10,
-                score: this.score
-            })
+            this.startGameOver()
             return
         }
 
@@ -796,19 +796,31 @@ export class BossScene extends Phaser.Scene {
         )
 
         if (this.boss.getHealth() === 0) {
-            playDestructionEffect(this, bossX, bossY, 'boss')
+            const effectDuration = playDestructionEffect(
+                this,
+                bossX,
+                bossY,
+                'boss'
+            )
             this.addScore(SCORE_VALUES.boss)
-            this.completeFight()
+            this.completeFight(effectDuration)
         }
     }
 
-    private completeFight() {
+    private completeFight(effectDuration: number) {
         this.fightComplete = true
         this.spawnQueue = []
         this.stopRoundShot()
         this.player.setActive(false)
         this.physics.pause()
 
+        this.time.delayedCall(
+            effectDuration + OUTCOME_CONFIG.menuPauseMs,
+            () => this.showVictoryMenu()
+        )
+    }
+
+    private showVictoryMenu() {
         this.add.rectangle(640, 360, 1280, 720, 0x020611, 0.72)
             .setDepth(200)
 
@@ -843,5 +855,32 @@ export class BossScene extends Phaser.Scene {
     private stopRoundShot() {
         this.roundShot?.destroy()
         this.roundShot = undefined
+    }
+
+    private startGameOver() {
+        if (this.gameOverStarted) {
+            return
+        }
+
+        this.gameOverStarted = true
+        this.stopRoundShot()
+        this.physics.pause()
+
+        const effectDuration = playDestructionEffect(
+            this,
+            this.player.x,
+            this.player.y,
+            'player'
+        )
+
+        this.time.delayedCall(
+            effectDuration + OUTCOME_CONFIG.menuPauseMs,
+            () => {
+                this.scene.start('GameOverScene', {
+                    wave: 10,
+                    score: this.score
+                })
+            }
+        )
     }
 }

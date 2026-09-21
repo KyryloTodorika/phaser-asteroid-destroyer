@@ -41,5 +41,15 @@ export const IMAGE_ASSETS = {
         asteroid: '/assets/images/effects/asteroid_destruction.png',
         alien: '/assets/images/effects/alien_destruction.png',
         boss: '/assets/images/effects/boss_destruction.png',
+        player: '/assets/images/effects/player_destruction.png',
     }
 }
+
+export const AUDIO_ASSETS = {
+    backgroundMusic: '/assets/audio/music/flower-man.mp3',
+    soundEffects: {
+        playerShoot: '/assets/audio/sfx/shoot.wav',
+        laserBeam: '/assets/audio/sfx/laserbeam.mp3',
+        destruction: '/assets/audio/sfx/explosion.mp3'
+    }
+} as const

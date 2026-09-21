@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { PlayerLaser } from './PlayerLaser'
 import type { SuperShotType } from './SuperShot'
 import { BOOSTER_CONFIG } from '../config/gameplay/boosters'
+import { PLAYER_SHOOT_SFX_CONFIG } from '../config/gameplay/audio'
 import {
     PLAYER_COAST_ANIMATION,
     PLAYER_CONFIG,
@@ -386,6 +387,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         laser.setVelocity(
             direction.x * PlayerLaser.speed,
             direction.y * PlayerLaser.speed
+        )
+
+        this.scene.sound.play(
+            PLAYER_SHOOT_SFX_CONFIG.key,
+            { volume: PLAYER_SHOOT_SFX_CONFIG.volume }
         )
 
         // =========================================

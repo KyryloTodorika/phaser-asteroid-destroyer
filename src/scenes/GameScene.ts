@@ -25,6 +25,7 @@ import {
 } from '../config/gameplay/obstacles'
 import { SCORE_VALUES } from '../config/gameplay/score'
 import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
+import { OUTCOME_CONFIG } from '../config/gameplay/outcomes'
 
 import { WaveManager } from '../systems/WaveManager'
 import { getBorderSpawnPosition } from '../systems/borderSpawn'
@@ -85,6 +86,7 @@ export class GameScene extends Phaser.Scene {
 
     private waveInProgress: boolean = false
     private waveComplete: boolean = false
+    private gameOverStarted: boolean = false
     private waveSpawnQueue: Array<() => void> = []
     private nextWaveSpawnAt: number = 0
 
@@ -110,6 +112,7 @@ export class GameScene extends Phaser.Scene {
 
         this.waveInProgress = false
         this.waveComplete = false
+        this.gameOverStarted = false
         this.waveSpawnQueue = []
         this.nextWaveSpawnAt = 0
         this.currentWave = 1
@@ -909,14 +912,7 @@ export class GameScene extends Phaser.Scene {
         if (
             !this.player.active
         ) {
-
-            this.scene.start(
-                'GameOverScene',
-                {
-                    wave: this.currentWave,
-                    score: this.score
-                }
-            )
+            this.startGameOver()
 
             return
         }
@@ -1075,6 +1071,33 @@ export class GameScene extends Phaser.Scene {
     private stopRoundShot() {
         this.roundShot?.destroy()
         this.roundShot = undefined
+    }
+
+    private startGameOver() {
+        if (this.gameOverStarted) {
+            return
+        }
+
+        this.gameOverStarted = true
+        this.stopRoundShot()
+        this.physics.pause()
+
+        const effectDuration = playDestructionEffect(
+            this,
+            this.player.x,
+            this.player.y,
+            'player'
+        )
+
+        this.time.delayedCall(
+            effectDuration + OUTCOME_CONFIG.menuPauseMs,
+            () => {
+                this.scene.start('GameOverScene', {
+                    wave: this.currentWave,
+                    score: this.score
+                })
+            }
+        )
     }
 
     private detonateExplosionShot(

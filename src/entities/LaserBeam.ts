@@ -4,6 +4,7 @@ import {
     LASER_BEAM_ANIMATION,
     SUPER_SHOT_CONFIG
 } from '../config/gameplay/weapons'
+import { LASER_BEAM_SFX_CONFIG } from '../config/gameplay/audio'
 
 export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
     private readonly damage: number = SUPER_SHOT_CONFIG.laser.damage
@@ -12,6 +13,7 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
     private readonly direction = new Phaser.Math.Vector2(0, -1)
     private readonly beamOffset: number = SUPER_SHOT_CONFIG.laser.offsetFromPlayer
     private readonly activeTime: number = SUPER_SHOT_CONFIG.laser.activeTimeMs
+    private beamSound?: Phaser.Sound.BaseSound
 
     constructor(
         scene: Phaser.Scene,
@@ -27,6 +29,11 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
         this.setDisplaySize(740, 175)
         this.setDepth(player.depth - 1)
         this.play(LASER_BEAM_ANIMATION)
+
+        this.beamSound = scene.sound.add(LASER_BEAM_SFX_CONFIG.key, {
+            volume: LASER_BEAM_SFX_CONFIG.volume
+        })
+        this.beamSound.play()
 
         const body = this.body as Phaser.Physics.Arcade.Body
 
@@ -83,5 +90,13 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
         this.hitTargets.add(target)
 
         return this.damage
+    }
+
+    destroy(fromScene?: boolean) {
+        this.beamSound?.stop()
+        this.beamSound?.destroy()
+        this.beamSound = undefined
+
+        super.destroy(fromScene)
     }
 }

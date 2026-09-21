@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
+import { DESTRUCTION_SFX_CONFIG } from '../config/gameplay/audio'
 
-export type DestructionEffectType = 'asteroid' | 'alien' | 'boss'
+export type DestructionEffectType = 'asteroid' | 'alien' | 'boss' | 'player'
 
 const EFFECT_SETTINGS = {
     asteroid: {
@@ -23,6 +24,13 @@ const EFFECT_SETTINGS = {
         durationMs: 1500,
         shockwaveColor: 0x7cff55,
         depth: 300
+    },
+    player: {
+        texture: 'player_destruction',
+        displaySize: 240,
+        durationMs: 900,
+        shockwaveColor: 0x54e7ff,
+        depth: 300
     }
 } as const satisfies Record<DestructionEffectType, {
     texture: string
@@ -39,10 +47,16 @@ export function playDestructionEffect(
     type: DestructionEffectType
 ) {
     const settings = EFFECT_SETTINGS[type]
+
+    scene.sound.play(DESTRUCTION_SFX_CONFIG.key, {
+        volume: DESTRUCTION_SFX_CONFIG.volume[type]
+    })
+
     const effect = scene.add.image(x, y, settings.texture)
-        .setDisplaySize(settings.displaySize, settings.displaySize)
-        .setScale(0.18)
         .setDepth(settings.depth)
+    const baseScale = settings.displaySize / Math.max(effect.width, effect.height)
+
+    effect.setScale(baseScale * 0.18)
 
     const shockwave = scene.add.circle(
         x,
@@ -59,7 +73,7 @@ export function playDestructionEffect(
 
     scene.tweens.add({
         targets: effect,
-        scale: type === 'boss' ? 1.1 : 1,
+        scale: baseScale * (type === 'boss' ? 1.1 : 1),
         alpha: 0,
         rotation: Phaser.Math.FloatBetween(-0.22, 0.22),
         duration: settings.durationMs,
@@ -75,4 +89,6 @@ export function playDestructionEffect(
         ease: 'Quad.Out',
         onComplete: () => shockwave.destroy()
     })
+
+    return settings.durationMs
 }
