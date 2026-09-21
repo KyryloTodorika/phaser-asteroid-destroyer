@@ -436,10 +436,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         )
     }
 
-    getMovementDirection(): Phaser.Math.Vector2 {
-        return this.movementDirection
-    }
-
     setRotationLocked(locked: boolean) {
         this.rotationLocked = locked
     }

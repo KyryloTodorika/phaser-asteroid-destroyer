@@ -587,22 +587,6 @@ export class GameScene extends Phaser.Scene {
         )
 
         // =========================================
-        // SUPER SHOTS
-        // =========================================
-
-        this.physics.add.overlap(
-            this.superShots,
-            this.blackHoleGroup,
-            (shotObject) => {
-                const shot = shotObject as LaserBeam
-
-                if (shot.active) {
-                    shot.destroy()
-                }
-            }
-        )
-
-        // =========================================
         // EXPLOSION SHOT
         // =========================================
 

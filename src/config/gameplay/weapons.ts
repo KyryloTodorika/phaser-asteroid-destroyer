@@ -14,7 +14,7 @@ export const SUPER_SHOT_CONFIG = {
     },
     laser: {
         damage: 80,
-        activeTimeMs: 1000,
+        activeTimeMs: 3000,
         offsetFromPlayer: 340
     },
     round: {

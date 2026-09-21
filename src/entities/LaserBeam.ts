@@ -49,7 +49,10 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
     }
 
     private followPlayer() {
-        this.direction.copy(this.player.getMovementDirection())
+        this.direction.set(
+            Math.sin(this.player.rotation),
+            -Math.cos(this.player.rotation)
+        )
 
         this.setPosition(
             this.player.x + this.direction.x * this.beamOffset,
