@@ -19,6 +19,10 @@ import {
     BLACK_HOLE_ANIMATION,
     BLACK_HOLE_CONFIG
 } from '../config/gameplay/obstacles'
+import {
+    BOSS_CONFIG,
+    BOSS_IDLE_ANIMATION
+} from '../config/gameplay/enemies'
 
 export class BootScene extends Phaser.Scene {
     constructor() {
@@ -58,7 +62,14 @@ export class BootScene extends Phaser.Scene {
         this.load.image('alien_fast', IMAGE_ASSETS.enemies.fast)
         this.load.image('alien_fat', IMAGE_ASSETS.enemies.fat)
         this.load.image('alien_shooter', IMAGE_ASSETS.enemies.shooter)
-        this.load.image('boss_spaceship', IMAGE_ASSETS.enemies.boss)
+        this.load.spritesheet(
+            'boss_spaceship_animation',
+            IMAGE_ASSETS.enemies.bossAnimation,
+            {
+                frameWidth: 627,
+                frameHeight: 627
+            }
+        )
 
         this.load.image(
             'player_laser',
@@ -137,6 +148,16 @@ export class BootScene extends Phaser.Scene {
                 end: 3
             }),
             frameRate: BLACK_HOLE_CONFIG.animationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: BOSS_IDLE_ANIMATION,
+            frames: this.anims.generateFrameNumbers(
+                'boss_spaceship_animation',
+                { start: 0, end: 3 }
+            ),
+            frameRate: BOSS_CONFIG.animationFrameRate,
             repeat: -1
         })
 

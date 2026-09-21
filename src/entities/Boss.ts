@@ -1,5 +1,8 @@
 import Phaser from 'phaser'
-import { BOSS_CONFIG } from '../config/gameplay/enemies'
+import {
+    BOSS_CONFIG,
+    BOSS_IDLE_ANIMATION
+} from '../config/gameplay/enemies'
 
 export class Boss extends Phaser.Physics.Arcade.Sprite {
     static readonly maxHealth: number = BOSS_CONFIG.maxHealth
@@ -12,7 +15,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
         x: number,
         y: number
     ) {
-        super(scene, x, y, 'boss_spaceship')
+        super(scene, x, y, 'boss_spaceship_animation')
 
         scene.add.existing(this)
         scene.physics.add.existing(this)
@@ -24,10 +27,15 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
         this.setBounce(1)
         this.setVelocityY(BOSS_CONFIG.movementSpeed)
         this.setDepth(10)
+        this.play(BOSS_IDLE_ANIMATION)
 
         const body = this.body as Phaser.Physics.Arcade.Body
         body.setAllowGravity(false)
-        body.setSize(1000, 1000)
+        body.setSize(
+            this.width * BOSS_CONFIG.hitbox.widthRatio,
+            this.height * BOSS_CONFIG.hitbox.heightRatio,
+            true
+        )
     }
 
     update(player: Phaser.Physics.Arcade.Sprite, time: number): boolean {

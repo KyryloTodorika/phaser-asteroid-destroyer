@@ -1,5 +1,7 @@
 export type AlienType = 'standard' | 'fast' | 'fat' | 'shooter'
 
+export const BOSS_IDLE_ANIMATION = 'boss_idle'
+
 export const ALIEN_CONFIG = {
     standard: {
         speed: 80,
@@ -48,6 +50,11 @@ export const ALIEN_SPAWN_CONFIG = {
 
 export const BOSS_CONFIG = {
     maxHealth: 1500,
+    animationFrameRate: 5,
+    hitbox: {
+        widthRatio: 0.8,
+        heightRatio: 0.8
+    },
     contactDamage: 20,
     shootCooldownMs: 1500,
     projectileSpawnOffset: 150,

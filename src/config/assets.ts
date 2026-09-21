@@ -10,6 +10,8 @@ export const IMAGE_ASSETS = {
         fat: '/assets/images/enemies/alien_fat.png',
         shooter: '/assets/images/enemies/alien_shooter.png',
         boss: '/assets/images/enemies/boss_spaceship.png',
+        bossAnimation:
+            '/assets/images/enemies/boss_spaceship_animation_sheet.png',
     },
 
     projectiles: {
