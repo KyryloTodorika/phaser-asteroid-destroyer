@@ -1,8 +1,8 @@
 export const ASTEROID_CONFIG = {
     speed: 150,
     health: 30,
-    contactDamage: 10,
-    damageToAliens: 10,
+    contactDamage: 15,
+    damageToAliens: 15,
     minAngularVelocity: -40,
     maxAngularVelocity: 40,
     inwardSpreadRadians: Math.PI / 3,
@@ -11,7 +11,7 @@ export const ASTEROID_CONFIG = {
 } as const
 
 export const BLACK_HOLE_CONFIG = {
-    contactDamage: 30,
+    contactDamage: 45,
     minSpawnDistanceFromPlayer: 250,
     animationFrameRate: 6
 } as const

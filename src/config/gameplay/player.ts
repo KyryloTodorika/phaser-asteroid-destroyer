@@ -17,5 +17,5 @@ export const PLAYER_CONFIG = {
         cooldownMs: 200,
         projectileSpawnOffset: 10
     },
-    superShotCooldownMs: 8000
+    superShotCooldownMs: 7500
 } as const

@@ -2,29 +2,29 @@ export type AlienType = 'standard' | 'fast' | 'fat' | 'shooter'
 
 export const ALIEN_CONFIG = {
     standard: {
-        speed: 70,
+        speed: 80,
         health: 30,
         contactDamage: 20
     },
     fast: {
-        speed: 150,
-        health: 20,
-        contactDamage: 20
+        speed: 200,
+        health: 10,
+        contactDamage: 15
     },
     fat: {
-        speed: 45,
-        health: 100,
-        contactDamage: 20
+        speed: 40,
+        health: 150,
+        contactDamage: 30
     },
     shooter: {
-        speed: 80,
+        speed: 70,
         health: 20,
-        contactDamage: 20,
+        contactDamage: 10,
         preferredDistanceMin: 280,
         preferredDistanceMax: 420,
-        shootCooldownMs: 1400,
+        shootCooldownMs: 1800,
         projectileSpawnOffset: 35,
-        projectileDamage: 12
+        projectileDamage: 9
     }
 } as const satisfies Record<AlienType, {
     speed: number
@@ -49,12 +49,12 @@ export const ALIEN_SPAWN_CONFIG = {
 export const BOSS_CONFIG = {
     maxHealth: 1500,
     contactDamage: 20,
-    shootCooldownMs: 1000,
+    shootCooldownMs: 1500,
     projectileSpawnOffset: 150,
     projectileDamage: 12,
     movementSpeed: 100,
-    finalMovementSpeed: 200,
-    finalMovementHealthRatio: 0.25,
+    finalMovementSpeed: 150,
+    finalMovementHealthRatio: 0.2,
     spawnQueueIntervalMs: 450,
     spawnPatterns: {
         asteroid: { unlockHealthRatio: 0.9, intervalMs: 7000 },

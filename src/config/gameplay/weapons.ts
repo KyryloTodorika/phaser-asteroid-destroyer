@@ -11,18 +11,18 @@ export const SUPER_SHOT_CONFIG = {
     explosion: {
         speed: PLAYER_PROJECTILE_CONFIG.speed,
         blastRadius: 180,
-        damage: 70,
-        lifetimeMs: 2500
+        damage: 150,
+        lifetimeMs: 3000
     },
     laser: {
-        damage: 80,
-        activeTimeMs: 3000,
+        damage: 100,
+        activeTimeMs: 2000,
         offsetFromPlayer: 340,
         animationFrameRate: 12
     },
     round: {
-        durationMs: 3000,
-        intervalMs: 250,
+        durationMs: 2500,
+        intervalMs: 300,
         projectileCount: 12,
         rotationDegreesPerSecond: 600,
         projectileSpawnOffset: 55
