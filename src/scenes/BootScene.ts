@@ -15,6 +15,10 @@ import {
     LASER_BEAM_ANIMATION,
     SUPER_SHOT_CONFIG
 } from '../config/gameplay/weapons'
+import {
+    BLACK_HOLE_ANIMATION,
+    BLACK_HOLE_CONFIG
+} from '../config/gameplay/obstacles'
 
 export class BootScene extends Phaser.Scene {
     constructor() {
@@ -89,7 +93,14 @@ export class BootScene extends Phaser.Scene {
             this.load.image(`asteroid_${index + 1}`, path)
         })
 
-        this.load.image('black_hole', IMAGE_ASSETS.blackholes.blackHole)
+        this.load.spritesheet(
+            'black_hole_animation',
+            IMAGE_ASSETS.blackholes.animation,
+            {
+                frameWidth: 754,
+                frameHeight: 522
+            }
+        )
         this.load.image(
             'asteroid_destruction',
             IMAGE_ASSETS.destructionEffects.asteroid
@@ -118,6 +129,16 @@ export class BootScene extends Phaser.Scene {
         if (!backgroundMusic.isPlaying) {
             backgroundMusic.play()
         }
+
+        this.anims.create({
+            key: BLACK_HOLE_ANIMATION,
+            frames: this.anims.generateFrameNumbers('black_hole_animation', {
+                start: 0,
+                end: 3
+            }),
+            frameRate: BLACK_HOLE_CONFIG.animationFrameRate,
+            repeat: -1
+        })
 
         this.anims.create({
             key: PLAYER_THRUST_ANIMATION,

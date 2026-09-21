@@ -35,6 +35,8 @@ export const IMAGE_ASSETS = {
 
     blackholes: {
         blackHole: '/assets/images/obstacles/blackhole/blackhole.png',
+        animation:
+            '/assets/images/obstacles/blackhole/blackhole_animation_sheet.png',
     },
 
     destructionEffects: {

@@ -12,8 +12,11 @@ export const ASTEROID_CONFIG = {
 
 export const BLACK_HOLE_CONFIG = {
     contactDamage: 30,
-    minSpawnDistanceFromPlayer: 250
+    minSpawnDistanceFromPlayer: 250,
+    animationFrameRate: 6
 } as const
+
+export const BLACK_HOLE_ANIMATION = 'black_hole_spin'
 
 export const SPAWN_AREA_CONFIG = {
     minX: 100,
