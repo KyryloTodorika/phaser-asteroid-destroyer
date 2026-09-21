@@ -25,8 +25,13 @@ export class Booster extends Phaser.Physics.Arcade.Sprite {
         this.setDepth(15)
 
         const body = this.body as Phaser.Physics.Arcade.Body
+        const radius = this.width * 0.3
         body.setAllowGravity(false)
-        body.setCircle(this.width * 0.4)
+        body.setCircle(
+            radius,
+            (this.width - radius * 2) / 2,
+            (this.height - radius * 2) / 2
+        )
     }
 
     update(player: Player) {
