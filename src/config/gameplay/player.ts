@@ -13,11 +13,5 @@ export const PLAYER_CONFIG = {
         cooldownMs: 200,
         projectileSpawnOffset: 10
     },
-    superShotCooldownMs: 8000,
-    display: {
-        width: 96,
-        height: 96,
-        hitboxWidth: 48,
-        hitboxHeight: 108
-    }
+    superShotCooldownMs: 8000
 } as const

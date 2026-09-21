@@ -18,10 +18,7 @@ export class EnemyLaser extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(
-            ENEMY_PROJECTILE_CONFIG.displayWidth,
-            ENEMY_PROJECTILE_CONFIG.displayHeight
-        )
+        this.setDisplaySize(8, 20)
         this.setRotation(rotation)
 
         scene.time.delayedCall(ENEMY_PROJECTILE_CONFIG.lifetimeMs, () => {

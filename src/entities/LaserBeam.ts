@@ -21,18 +21,12 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(
-            SUPER_SHOT_CONFIG.laser.displayWidth,
-            SUPER_SHOT_CONFIG.laser.displayHeight
-        )
+        this.setDisplaySize(740, 175)
         this.setDepth(20)
 
         const body = this.body as Phaser.Physics.Arcade.Body
 
-        body.setSize(
-            SUPER_SHOT_CONFIG.laser.hitboxLength,
-            SUPER_SHOT_CONFIG.laser.hitboxThickness
-        )
+        body.setSize(940, 87)
 
         this.followPlayer()
 
@@ -68,10 +62,8 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
         const sine = Math.abs(this.direction.y)
 
         body.setSize(
-            SUPER_SHOT_CONFIG.laser.hitboxLength * cosine +
-                SUPER_SHOT_CONFIG.laser.hitboxThickness * sine,
-            SUPER_SHOT_CONFIG.laser.hitboxLength * sine +
-                SUPER_SHOT_CONFIG.laser.hitboxThickness * cosine
+            940 * cosine + 87 * sine,
+            940 * sine + 87 * cosine
         )
         body.updateFromGameObject()
     }

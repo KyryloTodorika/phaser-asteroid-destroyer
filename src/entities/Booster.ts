@@ -21,12 +21,12 @@ export class Booster extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(BOOSTER_CONFIG.displaySize, BOOSTER_CONFIG.displaySize)
+        this.setDisplaySize(52, 52)
         this.setDepth(15)
 
         const body = this.body as Phaser.Physics.Arcade.Body
         body.setAllowGravity(false)
-        body.setCircle(this.width * BOOSTER_CONFIG.hitboxRadiusScale)
+        body.setCircle(this.width * 0.4)
     }
 
     update(player: Player) {

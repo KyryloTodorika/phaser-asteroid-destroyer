@@ -3,9 +3,6 @@ export const ASTEROID_CONFIG = {
     health: 30,
     contactDamage: 10,
     damageToAliens: 10,
-    minDisplaySize: 80,
-    maxDisplaySize: 140,
-    hitboxRadiusScale: 0.4,
     minAngularVelocity: -40,
     maxAngularVelocity: 40,
     textureCount: 4,
@@ -14,11 +11,6 @@ export const ASTEROID_CONFIG = {
 
 export const BLACK_HOLE_CONFIG = {
     contactDamage: 30,
-    displayWidth: 180,
-    displayHeight: 125,
-    hitboxRadius: 240,
-    hitboxOffsetX: 121,
-    hitboxOffsetY: 9,
     minSpawnDistanceFromPlayer: 250
 } as const
 

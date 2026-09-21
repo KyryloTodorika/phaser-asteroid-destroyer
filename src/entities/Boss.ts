@@ -17,7 +17,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(BOSS_CONFIG.displaySize, BOSS_CONFIG.displaySize)
+        this.setDisplaySize(340, 340)
         this.setRotation(-Math.PI / 2)
         this.setImmovable(true)
         this.setCollideWorldBounds(true)
@@ -27,7 +27,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
 
         const body = this.body as Phaser.Physics.Arcade.Body
         body.setAllowGravity(false)
-        body.setSize(BOSS_CONFIG.hitboxSize, BOSS_CONFIG.hitboxSize)
+        body.setSize(1000, 1000)
     }
 
     update(player: Phaser.Physics.Arcade.Sprite, time: number): boolean {

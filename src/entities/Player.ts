@@ -104,14 +104,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // =========================================
 
         this.setDisplaySize(
-            PLAYER_CONFIG.display.width,
-            PLAYER_CONFIG.display.height
+            96,
+            96
         )
 
         // Player hitbox
         this.body?.setSize(
-            PLAYER_CONFIG.display.hitboxWidth,
-            PLAYER_CONFIG.display.hitboxHeight
+            48,
+            108
         )
 
         // =========================================

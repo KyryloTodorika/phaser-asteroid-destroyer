@@ -4,30 +4,22 @@ export const ALIEN_CONFIG = {
     standard: {
         speed: 70,
         health: 30,
-        contactDamage: 20,
-        displayWidth: 80,
-        displayHeight: 80
+        contactDamage: 20
     },
     fast: {
         speed: 150,
         health: 20,
-        contactDamage: 20,
-        displayWidth: 80,
-        displayHeight: 80
+        contactDamage: 20
     },
     fat: {
         speed: 45,
         health: 100,
-        contactDamage: 20,
-        displayWidth: 110,
-        displayHeight: 80
+        contactDamage: 20
     },
     shooter: {
         speed: 80,
         health: 20,
         contactDamage: 20,
-        displayWidth: 80,
-        displayHeight: 80,
         preferredDistanceMin: 280,
         preferredDistanceMax: 420,
         shootCooldownMs: 1400,
@@ -38,8 +30,6 @@ export const ALIEN_CONFIG = {
     speed: number
     health: number
     contactDamage: number
-    displayWidth: number
-    displayHeight: number
     preferredDistanceMin?: number
     preferredDistanceMax?: number
     shootCooldownMs?: number
@@ -49,9 +39,7 @@ export const ALIEN_CONFIG = {
 
 export const ENEMY_PROJECTILE_CONFIG = {
     speed: 350,
-    lifetimeMs: 2500,
-    displayWidth: 8,
-    displayHeight: 20
+    lifetimeMs: 2500
 } as const
 
 export const ALIEN_SPAWN_CONFIG = {
@@ -67,8 +55,6 @@ export const BOSS_CONFIG = {
     movementSpeed: 100,
     finalMovementSpeed: 200,
     finalMovementHealthRatio: 0.25,
-    displaySize: 340,
-    hitboxSize: 1000,
     spawnPatterns: {
         asteroid: { unlockHealthRatio: 0.9, intervalMs: 3000 },
         fast: { unlockHealthRatio: 0.75, intervalMs: 4500 },

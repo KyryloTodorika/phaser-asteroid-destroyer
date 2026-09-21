@@ -17,10 +17,7 @@ export class PlayerLaser extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(
-            PLAYER_PROJECTILE_CONFIG.displayWidth,
-            PLAYER_PROJECTILE_CONFIG.displayHeight
-        )
+        this.setDisplaySize(8, 20)
         this.setRotation(rotation)
 
         const body = this.body as Phaser.Physics.Arcade.Body

@@ -10,8 +10,6 @@ export const BOOSTER_TYPES: BoosterType[] = [
 export const BOOSTER_CONFIG = {
     dropChance: 0.25,
     followSpeed: 180,
-    displaySize: 52,
-    hitboxRadiusScale: 0.4,
     effects: {
         healAmount: 40,
         shieldDurationMs: 3000,

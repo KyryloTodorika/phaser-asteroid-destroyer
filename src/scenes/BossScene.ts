@@ -473,8 +473,8 @@ export class BossScene extends Phaser.Scene {
         )
 
         const size = Phaser.Math.Between(
-            ASTEROID_CONFIG.minDisplaySize,
-            ASTEROID_CONFIG.maxDisplaySize
+            80,
+            140
         )
         asteroid.setDisplaySize(size, size)
         this.asteroidGroup.add(asteroid)

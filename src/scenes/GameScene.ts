@@ -326,8 +326,8 @@ export class GameScene extends Phaser.Scene {
 
         const size =
             Phaser.Math.Between(
-                ASTEROID_CONFIG.minDisplaySize,
-                ASTEROID_CONFIG.maxDisplaySize
+                80,
+                140
             )
 
         let x: number

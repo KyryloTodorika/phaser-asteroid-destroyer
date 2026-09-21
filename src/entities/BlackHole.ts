@@ -1,5 +1,4 @@
 import Phaser from 'phaser'
-import { BLACK_HOLE_CONFIG } from '../config/gameplay/obstacles'
 
 export class BlackHole extends Phaser.Physics.Arcade.Sprite {
     constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -8,17 +7,10 @@ export class BlackHole extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.setDisplaySize(
-            BLACK_HOLE_CONFIG.displayWidth,
-            BLACK_HOLE_CONFIG.displayHeight
-        )
+        this.setDisplaySize(180, 125)
         this.setImmovable(true)
 
         const body = this.body as Phaser.Physics.Arcade.Body
-        body.setCircle(
-            BLACK_HOLE_CONFIG.hitboxRadius,
-            BLACK_HOLE_CONFIG.hitboxOffsetX,
-            BLACK_HOLE_CONFIG.hitboxOffsetY
-        )
+        body.setCircle(240, 121, 9)
     }
 }

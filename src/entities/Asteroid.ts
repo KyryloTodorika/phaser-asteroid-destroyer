@@ -46,7 +46,7 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
         // =========================================
 
         body.setCircle(
-            this.width * ASTEROID_CONFIG.hitboxRadiusScale
+            this.width * 0.4
         )
 
         // =========================================

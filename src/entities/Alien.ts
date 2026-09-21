@@ -26,7 +26,7 @@ export class Alien extends Phaser.Physics.Arcade.Sprite {
         this.speed = config.speed
         this.health = config.health
 
-        this.setDisplaySize(config.displayWidth, config.displayHeight)
+        this.setDisplaySize(type === 'fat' ? 110 : 80, 80)
 
         this.setCollideWorldBounds(true)
     }
