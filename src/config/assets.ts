@@ -2,7 +2,7 @@ export const IMAGE_ASSETS = {
     background: '/assets/images/backgrounds/main_background.jpg',
     bossBackground: '/assets/images/backgrounds/boss_fight_background.png',
 
-    player: '/assets/images/player/spaceship.png',
+    player: '/assets/images/player/spaceship_animation_sheet.png',
 
     enemies: {
         standard: '/assets/images/enemies/alien_standard.png',

@@ -1,6 +1,10 @@
 /** Player movement, survivability, firing, and presentation settings. */
+export const PLAYER_THRUST_ANIMATION = 'player_thrust'
+export const PLAYER_COAST_ANIMATION = 'player_coast'
+
 export const PLAYER_CONFIG = {
     maxHealth: 100,
+    animationFrameRate: 10,
     movement: {
         acceleration: 1000,
         maxSpeed: 400,

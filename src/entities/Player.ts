@@ -2,7 +2,11 @@ import Phaser from 'phaser'
 import { PlayerLaser } from './PlayerLaser'
 import type { SuperShotType } from './SuperShot'
 import { BOOSTER_CONFIG } from '../config/gameplay/boosters'
-import { PLAYER_CONFIG } from '../config/gameplay/player'
+import {
+    PLAYER_COAST_ANIMATION,
+    PLAYER_CONFIG,
+    PLAYER_THRUST_ANIMATION
+} from '../config/gameplay/player'
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     private health: number = PLAYER_CONFIG.maxHealth
@@ -110,8 +114,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Player hitbox
         this.body?.setSize(
-            48,
-            108
+            this.width * (48 / 256),
+            this.height * (108 / 256)
         )
 
         // =========================================
@@ -223,6 +227,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         ) {
             direction.normalize()
 
+            this.play(PLAYER_THRUST_ANIMATION, true)
+
             this.movementDirection.copy(direction)
 
             this.setAcceleration(
@@ -237,6 +243,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 0,
                 0
             )
+
+            const speed = this.body?.velocity.length() ?? 0
+
+            if (speed > PLAYER_CONFIG.movement.rotationVelocityThreshold) {
+                this.play(PLAYER_COAST_ANIMATION, true)
+            } else {
+                this.anims.stop()
+                this.setFrame(0)
+            }
         }
 
         // =========================================

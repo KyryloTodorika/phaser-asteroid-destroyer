@@ -1,5 +1,10 @@
 import Phaser from 'phaser'
 import { IMAGE_ASSETS } from '../config/assets'
+import {
+    PLAYER_COAST_ANIMATION,
+    PLAYER_CONFIG,
+    PLAYER_THRUST_ANIMATION
+} from '../config/gameplay/player'
 
 export class BootScene extends Phaser.Scene {
     constructor() {
@@ -9,7 +14,10 @@ export class BootScene extends Phaser.Scene {
     preload() {
         this.load.image('background', IMAGE_ASSETS.background)
         this.load.image('boss_background', IMAGE_ASSETS.bossBackground)
-        this.load.image('player', IMAGE_ASSETS.player)
+        this.load.spritesheet('player', IMAGE_ASSETS.player, {
+            frameWidth: 720,
+            frameHeight: 720
+        })
 
         this.load.image(
             'alien_standard',
@@ -54,6 +62,25 @@ export class BootScene extends Phaser.Scene {
     }
 
     create() {
+        this.anims.create({
+            key: PLAYER_THRUST_ANIMATION,
+            frames: this.anims.generateFrameNumbers('player', {
+                start: 2,
+                end: 3
+            }),
+            frameRate: PLAYER_CONFIG.animationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: PLAYER_COAST_ANIMATION,
+            frames: this.anims.generateFrameNumbers('player', {
+                frames: [0, 1, 4, 5]
+            }),
+            frameRate: PLAYER_CONFIG.animationFrameRate,
+            repeat: -1
+        })
+
         this.scene.start('MenuScene')
     }
 }
