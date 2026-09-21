@@ -25,6 +25,7 @@ import { BossHealthBar } from '../ui/BossHealthBar'
 import { GameUI } from '../ui/GameUI'
 import { createActionButton, titleStyle } from '../ui/theme'
 import { getBorderSpawnPosition } from '../systems/borderSpawn'
+import { playDestructionEffect } from '../effects/DestructionEffect'
 
 type BossSpawnPattern = 'asteroid' | 'fast' | 'fat' | 'shooter'
 
@@ -720,6 +721,7 @@ export class BossScene extends Phaser.Scene {
         const dropY = alien.y
 
         if (alien.takeDamage(amount)) {
+            playDestructionEffect(this, dropX, dropY, 'alien')
             this.addScore(SCORE_VALUES.alien[alien.getType()])
             this.tryDropBooster(dropX, dropY)
         }
@@ -730,6 +732,7 @@ export class BossScene extends Phaser.Scene {
         const dropY = asteroid.y
 
         if (asteroid.takeDamage(amount)) {
+            playDestructionEffect(this, dropX, dropY, 'asteroid')
             this.addScore(SCORE_VALUES.asteroid)
             this.tryDropBooster(dropX, dropY)
         }
@@ -783,6 +786,9 @@ export class BossScene extends Phaser.Scene {
             return
         }
 
+        const bossX = this.boss.x
+        const bossY = this.boss.y
+
         this.boss.takeDamage(amount)
         this.bossHealthBar.update(
             this.boss.getHealth(),
@@ -790,6 +796,7 @@ export class BossScene extends Phaser.Scene {
         )
 
         if (this.boss.getHealth() === 0) {
+            playDestructionEffect(this, bossX, bossY, 'boss')
             this.addScore(SCORE_VALUES.boss)
             this.completeFight()
         }

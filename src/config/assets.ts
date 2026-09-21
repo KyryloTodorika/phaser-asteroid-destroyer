@@ -35,5 +35,11 @@ export const IMAGE_ASSETS = {
 
     blackholes: {
         blackHole: '/assets/images/obstacles/blackhole/blackhole.png',
+    },
+
+    destructionEffects: {
+        asteroid: '/assets/images/effects/asteroid_destruction.png',
+        alien: '/assets/images/effects/alien_destruction.png',
+        boss: '/assets/images/effects/boss_destruction.png',
     }
 }

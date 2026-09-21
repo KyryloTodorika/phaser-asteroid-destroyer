@@ -31,6 +31,7 @@ import { getBorderSpawnPosition } from '../systems/borderSpawn'
 import { WAVE_SPAWN_CONFIG } from '../config/gameplay/waves'
 import type { WaveConfig } from '../config/gameplay/waves'
 import { GameUI } from '../ui/GameUI'
+import { playDestructionEffect } from '../effects/DestructionEffect'
 
 export class GameScene extends Phaser.Scene {
 
@@ -1168,6 +1169,7 @@ export class GameScene extends Phaser.Scene {
         const dropY = alien.y
 
         if (alien.takeDamage(amount)) {
+            playDestructionEffect(this, dropX, dropY, 'alien')
             this.addScore(SCORE_VALUES.alien[alien.getType()])
             this.tryDropBooster(dropX, dropY)
         }
@@ -1178,6 +1180,7 @@ export class GameScene extends Phaser.Scene {
         const dropY = asteroid.y
 
         if (asteroid.takeDamage(amount)) {
+            playDestructionEffect(this, dropX, dropY, 'asteroid')
             this.addScore(SCORE_VALUES.asteroid)
             this.tryDropBooster(dropX, dropY)
         }

@@ -67,6 +67,18 @@ export class BootScene extends Phaser.Scene {
         })
 
         this.load.image('black_hole', IMAGE_ASSETS.blackholes.blackHole)
+        this.load.image(
+            'asteroid_destruction',
+            IMAGE_ASSETS.destructionEffects.asteroid
+        )
+        this.load.image(
+            'alien_destruction',
+            IMAGE_ASSETS.destructionEffects.alien
+        )
+        this.load.image(
+            'boss_destruction',
+            IMAGE_ASSETS.destructionEffects.boss
+        )
     }
 
     create() {
