@@ -1,6 +1,9 @@
 import Phaser from 'phaser'
 import type { Player } from './Player'
-import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
+import {
+    LASER_BEAM_ANIMATION,
+    SUPER_SHOT_CONFIG
+} from '../config/gameplay/weapons'
 
 export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
     private readonly damage: number = SUPER_SHOT_CONFIG.laser.damage
@@ -22,7 +25,8 @@ export class LaserBeam extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this)
 
         this.setDisplaySize(740, 175)
-        this.setDepth(20)
+        this.setDepth(player.depth - 1)
+        this.play(LASER_BEAM_ANIMATION)
 
         const body = this.body as Phaser.Physics.Arcade.Body
 

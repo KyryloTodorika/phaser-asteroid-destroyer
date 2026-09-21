@@ -111,6 +111,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             96,
             96
         )
+        this.setDepth(20)
 
         // Player hitbox
         this.body?.setSize(

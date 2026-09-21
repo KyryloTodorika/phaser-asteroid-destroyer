@@ -1,3 +1,5 @@
+export const LASER_BEAM_ANIMATION = 'laser_beam_pulse'
+
 export const PLAYER_PROJECTILE_CONFIG = {
     speed: 600,
     damage: 10,
@@ -15,7 +17,8 @@ export const SUPER_SHOT_CONFIG = {
     laser: {
         damage: 80,
         activeTimeMs: 3000,
-        offsetFromPlayer: 340
+        offsetFromPlayer: 340,
+        animationFrameRate: 12
     },
     round: {
         durationMs: 3000,

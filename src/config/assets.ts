@@ -15,6 +15,8 @@ export const IMAGE_ASSETS = {
     projectiles: {
         playerLaser: '/assets/images/projectiles/player_laser.png',
         enemyLaser: '/assets/images/projectiles/enemy_laser.png',
+        laserBeamAnimation:
+            '/assets/images/projectiles/supershots/laser_beam_animation_sheet.png',
     },
 
     boosters: {

@@ -5,6 +5,10 @@ import {
     PLAYER_CONFIG,
     PLAYER_THRUST_ANIMATION
 } from '../config/gameplay/player'
+import {
+    LASER_BEAM_ANIMATION,
+    SUPER_SHOT_CONFIG
+} from '../config/gameplay/weapons'
 
 export class BootScene extends Phaser.Scene {
     constructor() {
@@ -49,9 +53,13 @@ export class BootScene extends Phaser.Scene {
             'assets/images/projectiles/supershots/explosion_shot.png'
         )
 
-        this.load.image(
+        this.load.spritesheet(
             'laser_beam',
-            'assets/images/projectiles/supershots/laser_beam.png'
+            IMAGE_ASSETS.projectiles.laserBeamAnimation,
+            {
+                frameWidth: 1480,
+                frameHeight: 350
+            }
         )
 
         IMAGE_ASSETS.asteroids.forEach((path, index) => {
@@ -78,6 +86,16 @@ export class BootScene extends Phaser.Scene {
                 frames: [0, 1, 4, 5]
             }),
             frameRate: PLAYER_CONFIG.animationFrameRate,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: LASER_BEAM_ANIMATION,
+            frames: this.anims.generateFrameNumbers('laser_beam', {
+                start: 0,
+                end: 3
+            }),
+            frameRate: SUPER_SHOT_CONFIG.laser.animationFrameRate,
             repeat: -1
         })
 
