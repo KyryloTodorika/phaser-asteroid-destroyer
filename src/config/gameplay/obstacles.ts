@@ -5,6 +5,7 @@ export const ASTEROID_CONFIG = {
     damageToAliens: 10,
     minAngularVelocity: -40,
     maxAngularVelocity: 40,
+    inwardSpreadRadians: Math.PI / 3,
     textureCount: 4,
     minSpawnDistanceFromPlayer: 180
 } as const

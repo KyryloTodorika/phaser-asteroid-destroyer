@@ -55,11 +55,12 @@ export const BOSS_CONFIG = {
     movementSpeed: 100,
     finalMovementSpeed: 200,
     finalMovementHealthRatio: 0.25,
+    spawnQueueIntervalMs: 450,
     spawnPatterns: {
-        asteroid: { unlockHealthRatio: 0.9, intervalMs: 3000 },
-        fast: { unlockHealthRatio: 0.75, intervalMs: 4500 },
-        fat: { unlockHealthRatio: 0.65, intervalMs: 6000 },
-        shooter: { unlockHealthRatio: 0.5, intervalMs: 5000 }
+        asteroid: { unlockHealthRatio: 0.9, intervalMs: 7000 },
+        fast: { unlockHealthRatio: 0.75, intervalMs: 5000 },
+        fat: { unlockHealthRatio: 0.65, intervalMs: 9000 },
+        shooter: { unlockHealthRatio: 0.5, intervalMs: 9000 }
     },
     minSpawnDistanceFromPlayer: 250,
     minSpawnDistanceFromBoss: 220,

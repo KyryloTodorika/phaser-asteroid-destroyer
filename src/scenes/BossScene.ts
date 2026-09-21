@@ -18,12 +18,13 @@ import {
     ENEMY_PROJECTILE_CONFIG
 } from '../config/gameplay/enemies'
 import type { AlienType } from '../config/gameplay/enemies'
-import { ASTEROID_CONFIG, SPAWN_AREA_CONFIG } from '../config/gameplay/obstacles'
+import { ASTEROID_CONFIG } from '../config/gameplay/obstacles'
 import { SCORE_VALUES } from '../config/gameplay/score'
 import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
 import { BossHealthBar } from '../ui/BossHealthBar'
 import { GameUI } from '../ui/GameUI'
 import { createActionButton, titleStyle } from '../ui/theme'
+import { getBorderSpawnPosition } from '../systems/borderSpawn'
 
 type BossSpawnPattern = 'asteroid' | 'fast' | 'fat' | 'shooter'
 
@@ -50,6 +51,8 @@ export class BossScene extends Phaser.Scene {
         shooter: 0
     }
     private finalMovementStarted: boolean = false
+    private spawnQueue: Array<() => void> = []
+    private nextQueuedSpawnAt: number = 0
     private score: number = 0
 
     private roundShot?: RoundShot
@@ -77,6 +80,8 @@ export class BossScene extends Phaser.Scene {
             shooter: 0
         }
         this.finalMovementStarted = false
+        this.spawnQueue = []
+        this.nextQueuedSpawnAt = 0
 
         this.add.image(640, 360, 'boss_background')
             .setDisplaySize(1280, 720)
@@ -151,6 +156,7 @@ export class BossScene extends Phaser.Scene {
         }
 
         this.updateBossPhases(time)
+        this.processSpawnQueue(time)
 
         this.aliens.forEach(alien => {
             if (alien.active && alien.update(this.player, time)) {
@@ -447,13 +453,13 @@ export class BossScene extends Phaser.Scene {
         if (!this.unlockedSpawnPatterns.has(pattern)) {
             this.unlockedSpawnPatterns.add(pattern)
             this.lastSpawnAt[pattern] = time
-            spawn()
+            this.spawnQueue.push(spawn)
             return
         }
 
         if (time - this.lastSpawnAt[pattern] >= interval) {
             this.lastSpawnAt[pattern] = time
-            spawn()
+            this.spawnQueue.push(spawn)
         }
     }
 
@@ -478,7 +484,17 @@ export class BossScene extends Phaser.Scene {
         )
         asteroid.setDisplaySize(size, size)
         this.asteroidGroup.add(asteroid)
-        asteroid.startMovement()
+        const inwardDirection = new Phaser.Math.Vector2(
+            this.physics.world.bounds.centerX - position.x,
+            this.physics.world.bounds.centerY - position.y
+        )
+            .normalize()
+            .rotate(Phaser.Math.FloatBetween(
+                -ASTEROID_CONFIG.inwardSpreadRadians,
+                ASTEROID_CONFIG.inwardSpreadRadians
+            ))
+
+        asteroid.startMovement(inwardDirection)
     }
 
     private spawnAlien(type: Exclude<AlienType, 'standard'>) {
@@ -490,43 +506,31 @@ export class BossScene extends Phaser.Scene {
     }
 
     private getSpawnPosition(): Phaser.Math.Vector2 {
-        const position = new Phaser.Math.Vector2()
+        return getBorderSpawnPosition(
+            this,
+            [
+                {
+                    x: this.player.x,
+                    y: this.player.y,
+                    minDistance: BOSS_CONFIG.minSpawnDistanceFromPlayer
+                },
+                {
+                    x: this.boss.x,
+                    y: this.boss.y,
+                    minDistance: BOSS_CONFIG.minSpawnDistanceFromBoss
+                }
+            ],
+            BOSS_CONFIG.spawnPositionAttempts
+        )
+    }
 
-        for (
-            let attempt = 0;
-            attempt < BOSS_CONFIG.spawnPositionAttempts;
-            attempt++
-        ) {
-            position.set(
-                Phaser.Math.Between(
-                    SPAWN_AREA_CONFIG.minX,
-                    SPAWN_AREA_CONFIG.maxX
-                ),
-                Phaser.Math.Between(
-                    SPAWN_AREA_CONFIG.minY,
-                    SPAWN_AREA_CONFIG.maxY
-                )
-            )
-
-            const farFromPlayer = Phaser.Math.Distance.Between(
-                position.x,
-                position.y,
-                this.player.x,
-                this.player.y
-            ) >= BOSS_CONFIG.minSpawnDistanceFromPlayer
-            const farFromBoss = Phaser.Math.Distance.Between(
-                position.x,
-                position.y,
-                this.boss.x,
-                this.boss.y
-            ) >= BOSS_CONFIG.minSpawnDistanceFromBoss
-
-            if (farFromPlayer && farFromBoss) {
-                break
-            }
+    private processSpawnQueue(time: number) {
+        if (this.spawnQueue.length === 0 || time < this.nextQueuedSpawnAt) {
+            return
         }
 
-        return position
+        this.spawnQueue.shift()?.()
+        this.nextQueuedSpawnAt = time + BOSS_CONFIG.spawnQueueIntervalMs
     }
 
     private fireBossLaser() {
@@ -793,6 +797,7 @@ export class BossScene extends Phaser.Scene {
 
     private completeFight() {
         this.fightComplete = true
+        this.spawnQueue = []
         this.stopRoundShot()
         this.player.setActive(false)
         this.physics.pause()

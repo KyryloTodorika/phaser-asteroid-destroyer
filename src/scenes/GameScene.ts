@@ -18,11 +18,17 @@ import {
     ENEMY_PROJECTILE_CONFIG
 } from '../config/gameplay/enemies'
 import type { AlienType } from '../config/gameplay/enemies'
-import { ASTEROID_CONFIG, BLACK_HOLE_CONFIG, SPAWN_AREA_CONFIG } from '../config/gameplay/obstacles'
+import {
+    ASTEROID_CONFIG,
+    BLACK_HOLE_CONFIG,
+    SPAWN_AREA_CONFIG
+} from '../config/gameplay/obstacles'
 import { SCORE_VALUES } from '../config/gameplay/score'
 import { SUPER_SHOT_CONFIG } from '../config/gameplay/weapons'
 
 import { WaveManager } from '../systems/WaveManager'
+import { getBorderSpawnPosition } from '../systems/borderSpawn'
+import { WAVE_SPAWN_CONFIG } from '../config/gameplay/waves'
 import type { WaveConfig } from '../config/gameplay/waves'
 import { GameUI } from '../ui/GameUI'
 
@@ -78,6 +84,8 @@ export class GameScene extends Phaser.Scene {
 
     private waveInProgress: boolean = false
     private waveComplete: boolean = false
+    private waveSpawnQueue: Array<() => void> = []
+    private nextWaveSpawnAt: number = 0
 
     // =====================================================
     // CONSTRUCTOR
@@ -101,6 +109,8 @@ export class GameScene extends Phaser.Scene {
 
         this.waveInProgress = false
         this.waveComplete = false
+        this.waveSpawnQueue = []
+        this.nextWaveSpawnAt = 0
         this.currentWave = 1
         this.score = 0
         this.registry.remove('selectedSuperShot')
@@ -271,41 +281,36 @@ export class GameScene extends Phaser.Scene {
 
         this.ui.updateWave(this.currentWave)
 
-        // =========================================
-        // ASTEROIDS
-        // =========================================
+        this.waveSpawnQueue = []
 
         for (
             let i = 0;
             i < config.asteroids.count;
             i++
         ) {
-
-            this.createAsteroid()
+            this.waveSpawnQueue.push(() => this.createAsteroid())
         }
 
         for (let i = 0; i < config.blackHoles.count; i++) {
             this.createBlackHole()
         }
 
-        // =========================================
-        // ALIENS
-        // =========================================
-
         for (
             let i = 0;
             i < config.aliens.standard;
             i++
         ) {
-
-            this.createAlien('standard')
+            this.waveSpawnQueue.push(() => this.createAlien('standard'))
         }
 
         for (const type of ['fast', 'fat', 'shooter'] as AlienType[]) {
             for (let i = 0; i < config.aliens[type]; i++) {
-                this.createAlien(type)
+                this.waveSpawnQueue.push(() => this.createAlien(type))
             }
         }
+
+        Phaser.Utils.Array.Shuffle(this.waveSpawnQueue)
+        this.nextWaveSpawnAt = this.time.now
     }
 
     // =====================================================
@@ -330,28 +335,11 @@ export class GameScene extends Phaser.Scene {
                 140
             )
 
-        let x: number
-        let y: number
-
-        do {
-            x = Phaser.Math.Between(
-                SPAWN_AREA_CONFIG.minX,
-                SPAWN_AREA_CONFIG.maxX
-            )
-
-            y = Phaser.Math.Between(
-                SPAWN_AREA_CONFIG.minY,
-                SPAWN_AREA_CONFIG.maxY
-            )
-
-        } while (
-            Phaser.Math.Distance.Between(
-                x,
-                y,
-                this.player.x,
-                this.player.y
-            ) < ASTEROID_CONFIG.minSpawnDistanceFromPlayer
-        )
+        const position = getBorderSpawnPosition(this, [{
+            x: this.player.x,
+            y: this.player.y,
+            minDistance: ASTEROID_CONFIG.minSpawnDistanceFromPlayer
+        }])
 
         // =========================================
         // CREATE ASTEROID
@@ -360,8 +348,8 @@ export class GameScene extends Phaser.Scene {
         const asteroid =
             new Asteroid(
                 this,
-                x,
-                y,
+                position.x,
+                position.y,
                 texture,
                 ASTEROID_CONFIG.speed,
                 ASTEROID_CONFIG.health
@@ -384,7 +372,17 @@ export class GameScene extends Phaser.Scene {
         // NOW START PHYSICS
         // =========================================
 
-        asteroid.startMovement()
+        const inwardDirection = new Phaser.Math.Vector2(
+            this.physics.world.bounds.centerX - position.x,
+            this.physics.world.bounds.centerY - position.y
+        )
+            .normalize()
+            .rotate(Phaser.Math.FloatBetween(
+                -ASTEROID_CONFIG.inwardSpreadRadians,
+                ASTEROID_CONFIG.inwardSpreadRadians
+            ))
+
+        asteroid.startMovement(inwardDirection)
 
         return asteroid
     }
@@ -395,35 +393,11 @@ export class GameScene extends Phaser.Scene {
 
     private createAlien(type: AlienType) {
 
-        let x: number
-        let y: number
-
-        // =========================================
-        // RANDOM SPAWN
-        // =========================================
-
-        do {
-
-            x =
-                Phaser.Math.Between(
-                    SPAWN_AREA_CONFIG.minX,
-                    SPAWN_AREA_CONFIG.maxX
-                )
-
-            y =
-                Phaser.Math.Between(
-                    SPAWN_AREA_CONFIG.minY,
-                    SPAWN_AREA_CONFIG.maxY
-                )
-
-        } while (
-            Phaser.Math.Distance.Between(
-                x,
-                y,
-                this.player.x,
-                this.player.y
-            ) < ALIEN_SPAWN_CONFIG.minDistanceFromPlayer
-        )
+        const position = getBorderSpawnPosition(this, [{
+            x: this.player.x,
+            y: this.player.y,
+            minDistance: ALIEN_SPAWN_CONFIG.minDistanceFromPlayer
+        }])
 
         // =========================================
         // CREATE
@@ -432,8 +406,8 @@ export class GameScene extends Phaser.Scene {
         const alien =
             new Alien(
                 this,
-                x,
-                y,
+                position.x,
+                position.y,
                 type
             )
 
@@ -830,7 +804,8 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         if (
-            livingAliens.length > 0
+            livingAliens.length > 0 ||
+            this.waveSpawnQueue.length > 0
         ) {
             return
         }
@@ -923,6 +898,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     private clearWaveObjects() {
+        this.waveSpawnQueue = []
+        this.nextWaveSpawnAt = 0
         this.playerLasers.clear(true, true)
         this.enemyLasers.clear(true, true)
         this.superShots.clear(true, true)
@@ -964,6 +941,8 @@ export class GameScene extends Phaser.Scene {
         // =========================================
 
         this.player.update()
+
+        this.processWaveSpawnQueue(this.time.now)
 
         this.boosterGroup.getChildren().forEach(boosterObject => {
             (boosterObject as Booster).update(this.player)
@@ -1048,6 +1027,18 @@ export class GameScene extends Phaser.Scene {
 
     public getPlayer(): Player {
         return this.player
+    }
+
+    private processWaveSpawnQueue(time: number) {
+        if (
+            this.waveSpawnQueue.length === 0 ||
+            time < this.nextWaveSpawnAt
+        ) {
+            return
+        }
+
+        this.waveSpawnQueue.shift()?.()
+        this.nextWaveSpawnAt = time + WAVE_SPAWN_CONFIG.intervalMs
     }
 
     private fireSuperShot(

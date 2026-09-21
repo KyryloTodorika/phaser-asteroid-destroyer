@@ -17,6 +17,10 @@ export interface WaveConfig {
     }
 }
 
+export const WAVE_SPAWN_CONFIG = {
+    intervalMs: 450
+} as const
+
 export const WAVE_CONFIGS: WaveConfig[] = [
     {
         wave: 1,

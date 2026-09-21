@@ -28,7 +28,7 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
         // to asteroidGroup in GameScene.
     }
 
-    startMovement() {
+    startMovement(direction?: Phaser.Math.Vector2) {
 
         const body =
             this.body as Phaser.Physics.Arcade.Body
@@ -53,11 +53,9 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
         // RANDOM DIRECTION
         // =========================================
 
-        const angle =
-            Phaser.Math.FloatBetween(
-                0,
-                Math.PI * 2
-            )
+        const angle = direction
+            ? direction.angle()
+            : Phaser.Math.FloatBetween(0, Math.PI * 2)
 
         body.setVelocity(
             Math.cos(angle) * this.speed,
