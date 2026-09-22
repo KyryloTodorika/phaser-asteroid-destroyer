@@ -27,6 +27,7 @@ import { GameUI } from '../ui/GameUI'
 import { createActionButton, titleStyle } from '../ui/theme'
 import { getBorderSpawnPosition } from '../systems/borderSpawn'
 import { playDestructionEffect } from '../effects/DestructionEffect'
+import { playExplosionShotEffect } from '../effects/ExplosionShotEffect'
 
 type BossSpawnPattern = 'asteroid' | 'fast' | 'fat' | 'shooter'
 
@@ -669,25 +670,7 @@ export class BossScene extends Phaser.Scene {
             }
         }
 
-        const blast = this.add.circle(
-            explosionX,
-            explosionY,
-            ExplosionShot.blastRadius,
-            0xff8a00,
-            0.35
-        )
-        .setStrokeStyle(6, 0xffffaa, 0.9)
-        .setScale(0.15)
-        .setDepth(30)
-
-        this.tweens.add({
-            targets: blast,
-            scale: 1,
-            alpha: 0,
-            duration: 320,
-            ease: 'Quad.Out',
-            onComplete: () => blast.destroy()
-        })
+        playExplosionShotEffect(this, explosionX, explosionY)
     }
 
     private damageObjectsInBlast(

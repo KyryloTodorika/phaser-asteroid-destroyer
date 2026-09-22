@@ -28,6 +28,14 @@ export const IMAGE_ASSETS = {
         superShotCharger: '/assets/images/boosters/super_shot_charger.png',
     },
 
+    ui: {
+        superShotIcons: {
+            explosion: '/assets/images/ui/supershots/explosion_icon.png',
+            laser: '/assets/images/ui/supershots/laser_icon.png',
+            round: '/assets/images/ui/supershots/round_icon.png'
+        }
+    },
+
     asteroids: [
         '/assets/images/obstacles/asteroids/asteroid_1.png',
         '/assets/images/obstacles/asteroids/asteroid_2.png',

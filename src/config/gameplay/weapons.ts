@@ -12,7 +12,9 @@ export const SUPER_SHOT_CONFIG = {
         speed: PLAYER_PROJECTILE_CONFIG.speed,
         blastRadius: 180,
         damage: 150,
-        lifetimeMs: 3000
+        lifetimeMs: 3000,
+        effectDisplaySize: 360,
+        effectDurationMs: 420
     },
     laser: {
         damage: 100,

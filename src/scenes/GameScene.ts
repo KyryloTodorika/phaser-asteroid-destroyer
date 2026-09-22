@@ -33,6 +33,7 @@ import { WAVE_SPAWN_CONFIG } from '../config/gameplay/waves'
 import type { WaveConfig } from '../config/gameplay/waves'
 import { GameUI } from '../ui/GameUI'
 import { playDestructionEffect } from '../effects/DestructionEffect'
+import { playExplosionShotEffect } from '../effects/ExplosionShotEffect'
 
 export class GameScene extends Phaser.Scene {
 
@@ -1144,25 +1145,7 @@ export class GameScene extends Phaser.Scene {
             }
         )
 
-        const blast = this.add.circle(
-            explosionX,
-            explosionY,
-            ExplosionShot.blastRadius,
-            0xff8a00,
-            0.35
-        )
-        .setStrokeStyle(6, 0xffffaa, 0.9)
-        .setScale(0.15)
-        .setDepth(30)
-
-        this.tweens.add({
-            targets: blast,
-            scale: 1,
-            alpha: 0,
-            duration: 320,
-            ease: 'Quad.Out',
-            onComplete: () => blast.destroy()
-        })
+        playExplosionShotEffect(this, explosionX, explosionY)
     }
 
     private damageObjectsInBlast(

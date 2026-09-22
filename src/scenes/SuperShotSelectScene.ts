@@ -26,11 +26,11 @@ export class SuperShotSelectScene extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif', fontSize: '15px', color: '#8ea4bd'
         }).setOrigin(0.5)
 
-        this.createAbilityCard(230, '1', 'explosion_shot', 'EXPLOSION', 'AREA DAMAGE',
+        this.createAbilityCard(230, '1', 'supershot_icon_explosion', 'EXPLOSION', 'AREA DAMAGE',
             'Detonates on impact and\ndamages everything nearby.', 'explosion')
-        this.createAbilityCard(640, '2', 'laser_beam', 'LASER BEAM', 'PIERCING DAMAGE',
+        this.createAbilityCard(640, '2', 'supershot_icon_laser', 'LASER BEAM', 'PIERCING DAMAGE',
             'Cuts a high-power path\nthrough clustered enemies.', 'laser')
-        this.createAbilityCard(1050, '3', 'player', 'ROUND SHOT', '360° COVERAGE',
+        this.createAbilityCard(1050, '3', 'supershot_icon_round', 'ROUND SHOT', '360° COVERAGE',
             'Spins the ship and fires\nin every direction.', 'round')
 
         this.add.text(640, 675, 'CLICK A CARD  •  OR PRESS 1 / 2 / 3', {
