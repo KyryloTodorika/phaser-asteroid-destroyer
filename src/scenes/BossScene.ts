@@ -87,6 +87,9 @@ export class BossScene extends Phaser.Scene {
         this.spawnQueue = []
         this.nextQueuedSpawnAt = 0
 
+        this.input.keyboard?.on('keydown-ESC', this.openPauseMenu, this)
+        this.input.keyboard?.on('keydown-P', this.openPauseMenu, this)
+
         this.add.image(640, 360, 'boss_background')
             .setDisplaySize(1280, 720)
 
@@ -856,6 +859,15 @@ export class BossScene extends Phaser.Scene {
     private stopRoundShot() {
         this.roundShot?.destroy()
         this.roundShot = undefined
+    }
+
+    private openPauseMenu() {
+        if (this.fightComplete || this.gameOverStarted) {
+            return
+        }
+
+        this.scene.launch('PauseScene', { sourceScene: 'BossScene' })
+        this.scene.pause()
     }
 
     private startGameOver() {

@@ -119,6 +119,9 @@ export class GameScene extends Phaser.Scene {
         this.score = 0
         this.registry.remove('selectedSuperShot')
 
+        this.input.keyboard?.on('keydown-ESC', this.openPauseMenu, this)
+        this.input.keyboard?.on('keydown-P', this.openPauseMenu, this)
+
         // =========================================
         // BACKGROUND
         // =========================================
@@ -1071,6 +1074,15 @@ export class GameScene extends Phaser.Scene {
     private stopRoundShot() {
         this.roundShot?.destroy()
         this.roundShot = undefined
+    }
+
+    private openPauseMenu() {
+        if (this.gameOverStarted || this.waveComplete) {
+            return
+        }
+
+        this.scene.launch('PauseScene', { sourceScene: 'GameScene' })
+        this.scene.pause()
     }
 
     private startGameOver() {

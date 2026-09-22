@@ -21,9 +21,9 @@ export const SUPER_SHOT_CONFIG = {
         animationFrameRate: 12
     },
     round: {
-        durationMs: 20500,
-        intervalMs: 100,
-        projectileCount: 20,
+        durationMs: 2500,
+        intervalMs: 300,
+        projectileCount: 12,
         rotationDegreesPerSecond: 600,
         projectileSpawnOffset: 55
     }

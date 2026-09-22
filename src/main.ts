@@ -6,6 +6,7 @@ import { MenuScene } from './scenes/MenuScene'
 import { GameOverScene } from './scenes/GameOverScene'
 import { SuperShotSelectScene } from './scenes/SuperShotSelectScene'
 import { BossScene } from './scenes/BossScene'
+import { PauseScene } from './scenes/PauseScene'
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
@@ -34,7 +35,8 @@ const config: Phaser.Types.Core.GameConfig = {
         MenuScene,
         GameOverScene,
         SuperShotSelectScene,
-        BossScene
+        BossScene,
+        PauseScene
     ]
 }
 
