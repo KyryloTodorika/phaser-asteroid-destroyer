@@ -63,19 +63,24 @@ export function createActionButton(
     y: number,
     label: string,
     onPress: () => void,
-    width = 260
+    width = 260,
+    depth = 0
 ) {
     const glow = scene.add.rectangle(x, y + 6, width, 62, UI.cyan, 0.12)
         .setStrokeStyle(1, UI.cyan, 0.2)
+        .setDepth(depth)
     const plate = scene.add.rectangle(x, y, width, 62, UI.panel, 0.96)
         .setStrokeStyle(2, UI.cyan, 0.75)
+        .setDepth(depth)
     const text = scene.add.text(x, y, label, {
         fontFamily: 'Trebuchet MS, Arial, sans-serif',
         fontSize: '21px',
         fontStyle: 'bold',
         color: UI.white,
         letterSpacing: 2
-    }).setOrigin(0.5)
+    })
+        .setOrigin(0.5)
+        .setDepth(depth)
 
     plate.setInteractive({ useHandCursor: true })
     plate.on('pointerover', () => {

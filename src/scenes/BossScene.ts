@@ -848,7 +848,8 @@ export class BossScene extends Phaser.Scene {
             440,
             'RETURN TO MENU',
             () => this.scene.start('MenuScene'),
-            300
+            300,
+            201
         )
     }
 
