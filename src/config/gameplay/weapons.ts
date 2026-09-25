@@ -18,13 +18,13 @@ export const SUPER_SHOT_CONFIG = {
     },
     laser: {
         damage: 100,
-        activeTimeMs: 2000,
+        activeTimeMs: 1000,
         offsetFromPlayer: 340,
         animationFrameRate: 12
     },
     round: {
-        durationMs: 2500,
-        intervalMs: 300,
+        durationMs: 2000,
+        intervalMs: 400,
         projectileCount: 12,
         rotationDegreesPerSecond: 600,
         projectileSpawnOffset: 55
